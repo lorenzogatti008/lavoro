@@ -1,0 +1,38 @@
+Assets/Audio - LEGGIMI
+
+Tutti i file audio di queste cartelle sono sintetizzati proceduralmente da noi
+(script Python/numpy, nessun campione o registrazione esterna).
+Non ci sono fonti esterne, quindi non ci sono licenze da rispettare.
+Sono placeholder: vanno sostituiti con audio definitivo prima del rilascio.
+
+Formato: WAV mono, 16 bit, 44100 Hz, picco normalizzato a -3 dBFS.
+I loop (Ambient/ e Music/) hanno il raccordo fine/inizio con crossfade.
+
+SFX/
+  sfx_step_stone_01.wav  -  0.25 s
+  sfx_step_stone_02.wav  -  0.25 s
+  sfx_step_stone_03.wav  -  0.25 s
+  sfx_door_open.wav  -  1.50 s
+  sfx_door_close.wav  -  0.90 s
+  sfx_pickup_coin.wav  -  0.50 s
+  sfx_pickup_item.wav  -  0.50 s
+  sfx_ui_click.wav  -  0.07 s
+  sfx_ui_hover.wav  -  0.15 s
+  sfx_success.wav  -  0.90 s
+  sfx_fail.wav  -  0.90 s
+  sfx_puzzle_solved.wav  -  2.00 s
+  sfx_lever.wav  -  0.60 s
+  sfx_pressure_plate.wav  -  0.50 s
+  sfx_torch_ignite.wav  -  1.20 s
+  sfx_interact.wav  -  0.20 s
+  sfx_stinger_discovery.wav  -  2.50 s
+
+Ambient/
+  amb_wind_loop.wav  -  24.00 s  (loop)
+  amb_temple_drone.wav  -  28.00 s  (loop)
+  amb_fire_crackle_loop.wav  -  22.00 s  (loop)
+  amb_crowd_murmur_loop.wav  -  24.00 s  (loop)
+
+Music/
+  music_explore_loop.wav  -  45.00 s  (loop)
+  music_tension_loop.wav  -  30.00 s  (loop)

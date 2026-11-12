@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Heritage Game in Unity</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,900;1,9..144,600&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* Slide della lezione, 210 minuti. Stile di docs/lezione-unity-heritage.html.
+   Frecce o spazio: avanti/indietro. N: note del docente. G: griglia. Le slide sono generate dai dati in fondo al file. */
+:root{--paper:#f4f4f1;--paper-2:#e9e9e5;--ink:#1b1b1b;--soft:#585858;--mid:#8c8c8c;--line:#d2d2cc;--r:10px;
+--fd:'Fraunces',Georgia,serif;--fb:'Inter',system-ui,sans-serif;--fm:'Space Mono',ui-monospace,Menlo,monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#2a2a28;overflow:hidden}
+body{font-family:var(--fb);color:var(--ink);-webkit-font-smoothing:antialiased}
+#stage{position:absolute;top:50%;left:50%;width:1280px;height:720px;transform-origin:center}
+.s{position:absolute;inset:0;background:var(--paper);padding:48px 72px 56px;display:none;flex-direction:column;overflow:hidden}
+.s.on{display:flex}
+.s::after{content:attr(data-n);position:absolute;right:28px;bottom:18px;font-family:var(--fm);font-size:12px;color:var(--mid)}
+.k{font-family:var(--fm);font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:var(--soft);border-bottom:1px solid var(--ink);padding-bottom:8px;margin-bottom:22px;display:flex;justify-content:space-between}
+h1{font-family:var(--fd);font-weight:900;font-size:104px;line-height:.92;letter-spacing:-.02em;text-shadow:4px 4px 0 rgba(0,0,0,.12)}
+h2{font-family:var(--fd);font-weight:900;font-size:46px;line-height:1.05;margin-bottom:22px}
+h1,h2,h3,.say{text-wrap:balance}p,dd,td,.aside{text-wrap:pretty}
+h1 em,h2 em{font-style:italic;font-weight:600;color:#3a3a3a}
+h3{font-family:var(--fd);font-weight:600;font-size:21px;line-height:1.2;margin-bottom:2px}
+p{font-size:20px;line-height:1.5;max-width:62ch}
+p+p,p+.defs,p+.steps,p+table,.defs+p,table+p,.steps+p{margin-top:12px}
+.lead{font-family:var(--fd);font-style:italic;font-size:26px;color:var(--soft);max-width:36ch;line-height:1.4}
+code{font-family:var(--fm);font-size:.82em;background:var(--paper-2);padding:1px 6px;border-radius:4px;white-space:nowrap}
+b{font-weight:600}
+/* Pieni e vuoti: il titolo resta fisso in alto, il contenuto si centra nello spazio sotto (centro ottico, un po' più in alto). */
+.row{display:flex;gap:44px;flex:1;min-height:0;align-items:center;padding-bottom:28px}.row>*{min-width:0}
+.row>.shot,.row>.fig:has(.img:not(.fit)),.row>.img{align-self:stretch}
+.solo{flex:1;display:flex;flex-direction:column;justify-content:center;max-width:1040px;padding-bottom:28px}
+.solo p{font-size:27px;line-height:1.45;max-width:40ch}.solo p+p{margin-top:18px}
+.solo .defs>*{font-size:23px;padding:15px 0}.solo .defs dt{padding-right:40px}
+.solo .steps{gap:12px}.solo .step{padding:14px 20px 14px 70px}.solo .step::before{font-size:38px;left:20px}.solo .step h3{font-size:24px}.solo .step p{font-size:19px}
+.solo table{font-size:20px}.solo th,.solo td{padding:13px 16px}.solo .warn{font-size:21px;max-width:52ch}
+.img.fit.up img{width:100%}
+.vis{flex:1;display:flex;flex-direction:column;justify-content:center}.txt{flex:1}
+.vis>svg{max-height:100%}
+.shot{flex:1;border:2px dashed var(--soft);border-radius:var(--r);background:var(--paper-2) radial-gradient(rgba(0,0,0,.06) 1px,transparent 1px) 0 0/9px 9px;display:flex;align-items:center;justify-content:center;text-align:center;padding:18px;font-family:var(--fm);font-size:14px;color:var(--soft);line-height:1.5}
+.shot b{display:block;color:var(--ink);font-size:12px;letter-spacing:.15em;margin-bottom:6px}
+.fig{display:flex;flex-direction:column;gap:6px;min-height:0;min-width:0}.fig>.img{flex:1}.fig>.cap{font-size:11px}
+.gridn{display:grid;gap:14px;flex:0 1 auto;min-height:0;align-items:start}.gridn .fig{min-height:0}.gridn .img{flex:0 1 auto;max-height:300px;min-height:0}.gridn .fig>.cap{font-size:12px}
+.img{flex:1;border:2px solid var(--ink);border-radius:var(--r);overflow:hidden;background:var(--paper-2);display:flex;min-height:0}
+.img img{width:100%;height:100%;object-fit:cover}
+.img.fit{border:0;border-radius:0;background:none;align-items:center;justify-content:center}
+.img.fit img{width:auto;height:auto;max-width:100%;max-height:100%;object-fit:contain;border:2px solid var(--ink);border-radius:8px;background:#fff}
+.fig:has(.img.fit)>.cap{text-align:center}
+.fig:has(.img.fit){justify-content:flex-start}.fig>.img.fit{flex:0 1 auto;min-height:0;display:block;text-align:center}
+.img.fit img{display:inline-block;vertical-align:top}.wide>.fig{flex:0 1 auto!important}
+.img.fit img{max-height:470px}.wide .img.fit img{max-height:290px}.gridn .img.fit img{max-height:220px}.vis .fig .img.fit img{max-height:190px}
+.cap{font-family:var(--fm);font-size:13px;color:var(--soft);line-height:1.5}
+.steps{counter-reset:p;display:flex;flex-direction:column;gap:9px}
+.steps.cols{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:12px}
+.step{position:relative;padding:9px 16px 9px 56px;border:1.5px solid var(--line);border-radius:var(--r);background:var(--paper)}
+.step::before{counter-increment:p;content:counter(p);position:absolute;left:16px;top:5px;font-family:var(--fd);font-weight:900;font-size:30px;color:transparent;-webkit-text-stroke:1.3px var(--ink)}
+.step p{font-size:17px;line-height:1.4}
+.defs{display:grid;grid-template-columns:auto 1fr;border-top:2px solid var(--ink)}
+.defs>*{padding:10px 0;border-bottom:1px solid var(--line);font-size:19px;line-height:1.45}
+.defs dt{font-family:var(--fd);font-weight:600;padding-right:26px;white-space:nowrap}
+.warn{border-left:5px solid var(--ink);background:var(--paper-2);padding:11px 18px;border-radius:0 var(--r) var(--r) 0;font-size:18px;line-height:1.45;margin-top:16px}
+.warn::before{content:'ATTENZIONE';display:block;font-family:var(--fm);font-size:11px;letter-spacing:.18em;color:var(--soft);margin-bottom:2px}
+.warn.tip::before{content:'IN BREVE'}
+.aside{color:var(--soft);margin-top:16px;padding-top:12px;border-top:1px solid var(--line)}.defs+.aside,table+.aside{border-top:0;padding-top:0;margin-top:18px}.solo .aside{font-size:21px}
+.say{font-family:var(--fd);font-weight:600;font-size:58px!important;line-height:1.12!important;letter-spacing:-.01em;max-width:21ch!important}
+table{border-collapse:collapse;width:100%;font-size:17px}th,td{text-align:left;padding:9px 13px;border-bottom:1px solid var(--line);vertical-align:top;line-height:1.4}
+th{font-family:var(--fm);font-size:12px;letter-spacing:.1em;text-transform:uppercase;background:var(--ink);color:var(--paper)}
+td:first-child{white-space:nowrap;font-weight:600}
+svg{display:block;width:100%;height:auto}svg text{font-family:var(--fm);font-size:15px;fill:var(--ink)}
+.wide>.vis:has(.chain)+div{margin-top:30px}
+.chain{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;border-top:2px solid var(--ink);margin-top:8px}.chain>div{position:relative;padding:22px 32px 0 0}.chain>div::before{content:'';position:absolute;top:-8px;left:0;width:14px;height:14px;border-radius:50%;background:var(--ink)}.chain h3{font-size:36px;font-weight:900;margin-bottom:8px}.chain p{font-size:19px;color:var(--soft)}
+.flow{display:flex;align-items:stretch}.flow>.fb{flex:1;border:2px solid var(--ink);border-radius:var(--r);padding:16px 18px;background:var(--paper)}
+.flow>.fb.d{background:var(--ink);color:var(--paper)}.flow>.fb.d .cap{color:#c9c9c4}
+.flow>.ar{flex:0 0 40px;display:flex;align-items:center;justify-content:center;font-family:var(--fm);font-size:22px}
+.fb p{font-size:17px}
+.comp{display:flex;flex-direction:column;gap:10px;border:2px solid var(--ink);border-radius:var(--r);padding:18px}
+.comp .r{display:flex;align-items:center;gap:12px;border:1.5px solid var(--ink);border-radius:8px;padding:11px 15px;font-family:var(--fm);font-size:15px;background:var(--paper-2);cursor:pointer}
+.comp .r.on{background:var(--ink);color:var(--paper)}
+.cb{flex:0 0 16px;width:16px;height:16px;border:1.5px solid var(--ink);border-radius:3px;background:var(--paper);position:relative}
+.cb.x{cursor:pointer}.cb.sp{visibility:hidden}.r.on .cb{border-color:var(--paper)}
+.cb.t::after{content:'';position:absolute;left:3.5px;top:-.5px;width:4px;height:9px;border:solid var(--ink);border-width:0 2px 2px 0;transform:rotate(40deg)}
+/* Slide a passi: tutti i pannelli stanno nel DOM, uno solo è visibile. */
+.pns{display:grid;align-content:center;flex:1}.pn{grid-area:1/1;visibility:hidden}.pn.on{visibility:visible}
+.pn h3{margin-bottom:8px}.pn .p0{font-family:var(--fd);font-weight:600;font-size:30px;line-height:1.25;max-width:14ch}
+.arimg{flex:0 0 62%;position:relative;border:2px solid var(--ink);border-radius:var(--r);overflow:hidden;background:var(--paper-2)}.arimg img{display:block;width:100%;height:auto}
+.arz{position:relative;transform-origin:0 0;transition:transform .4s ease}
+.ab{position:absolute;display:block;padding:0;border:0;background:transparent;cursor:pointer}
+.ab.sel{z-index:2;outline:3px solid var(--ink);outline-offset:-3px;box-shadow:0 0 0 2000px rgba(244,244,241,.65)}
+.pt{display:grid;grid-template-columns:270px 420px 1fr;gap:28px;align-items:center}
+.pv svg .mesh,.pv svg .flame,.pv svg .col,.pv svg .pl{transition:opacity .2s,transform .35s}
+.pv svg.nomesh .mesh,.pv svg.nomesh .flame,.pv svg.nosw .flame,.pv svg.nocol .col{opacity:0}.pv svg.nocol .pl{transform:translate(-110px,0)}
+.poly{flex:1.1;display:flex;flex-direction:column;align-items:center;gap:14px}.poly svg{width:auto;height:330px}
+.poly input[type=range]{width:360px}
+.poly input[type=range],input.rng{-webkit-appearance:none;appearance:none;height:24px;background:none;cursor:pointer}
+.poly input[type=range]::-webkit-slider-runnable-track,input.rng::-webkit-slider-runnable-track{height:2px;background:var(--ink)}
+.poly input[type=range]::-webkit-slider-thumb,input.rng::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--ink);border:0;margin-top:-9px}
+.poly input[type=range]::-moz-range-track,input.rng::-moz-range-track{height:2px;background:var(--ink)}
+.poly input[type=range]::-moz-range-thumb,input.rng::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--ink);border:0}
+.poly .cnt{font-family:var(--fm);font-size:18px}
+.crop{border:2px solid var(--ink);border-radius:8px;background-repeat:no-repeat;width:100%;max-height:470px;align-self:center}
+.kitui{display:grid;grid-template-columns:1fr 1.45fr .8fr;gap:22px;align-items:start}.kitui .col{display:flex;flex-direction:column;gap:12px}.kitui .crop{max-height:none}.kitui .cap{font-size:12px}
+.games{display:grid;grid-template-columns:repeat(5,1fr);gap:16px 14px}.games .fig{gap:5px}
+.grid5{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;flex:1}.grid5 .shot{font-size:12px;padding:8px}
+.part{justify-content:center}.part h1{font-size:110px}
+.part .subs{margin-top:30px;display:flex;flex-wrap:wrap;gap:8px;max-width:1040px}
+.part .subs span{font-family:var(--fm);font-size:13px;border:1.5px solid var(--ink);border-radius:999px;padding:5px 13px}
+.wide{display:flex;flex-direction:column;justify-content:center;gap:22px;flex:1;min-height:0;padding-bottom:28px}
+.wide>.fig:has(.img:not(.fit)){flex:1 1 auto!important}.wide>.vis{flex:0 0 auto;margin-top:8px}
+.part .num{position:absolute;right:64px;top:150px;font-family:var(--fd);font-weight:900;font-size:220px;line-height:1;color:transparent;-webkit-text-stroke:2px var(--line)}
+.dark{background:var(--ink);color:var(--paper)}.dark .k{color:#c9c9c4;border-color:#c9c9c4}.dark h1,.dark h2{color:var(--paper)}.dark h1 em,.dark h2 em{color:#c9c9c4}.dark .lead{color:#c9c9c4}
+.hero{justify-content:center}.hero .me{position:absolute;right:40px;bottom:0;height:652px;width:auto;z-index:3;pointer-events:none}.hero .k{position:relative;z-index:1}
+.hero .who{position:relative;z-index:2;max-width:620px;padding-bottom:30px}.hero h1{font-size:132px;line-height:.9}
+.hero .say{font-size:40px!important;margin-top:40px;padding-top:24px;border-top:2px solid var(--ink);max-width:15ch!important}
+.big{justify-content:center}.big h1{font-size:92px}.big h1.huge{font-size:200px;text-transform:uppercase;letter-spacing:-.03em;line-height:.9}
+pre{font-family:var(--fm);font-size:15px;line-height:1.5;background:var(--ink);color:var(--paper);border-radius:var(--r);padding:16px 20px;white-space:pre}
+.notes{display:none}
+#notes{position:fixed;left:0;right:0;bottom:0;max-height:34vh;overflow:auto;background:#111;color:#eee;font:15px/1.5 var(--fb);padding:14px 22px;display:none;border-top:3px solid #fff}
+#notes.on{display:block}#notes b{font-family:var(--fm);font-size:11px;letter-spacing:.15em;color:#aaa;display:block;margin-bottom:4px}
+#bar{position:fixed;top:0;left:0;height:3px;background:#fff;transition:width .2s}
+body.grid{overflow:auto}body.grid #stage{position:static;transform:none!important;width:auto;height:auto;display:grid;grid-template-columns:repeat(auto-fill,320px);gap:14px;padding:20px}
+body.grid .s{display:flex;position:relative;width:1280px;height:720px;transform:scale(.25);transform-origin:0 0;margin:0 -960px -540px 0;cursor:pointer}
+/* Moduli di simulazione esterni (slide-sim/*.js) */
+.sim{align-items:center;justify-content:center}
+.sim svg{max-height:400px}
+.wide>.sim{flex:0 1 auto;min-height:0}
+.wide>.sim svg{max-height:300px;width:auto;max-width:100%;margin:0 auto}
+.sim .lbl{font-family:var(--fm);font-size:14px;text-align:center;margin-top:8px}
+[data-s]{cursor:pointer}
+.seg{display:flex;width:fit-content;max-width:100%;margin:14px auto 0;border:2px solid var(--ink);border-radius:var(--r);background:var(--paper);overflow:hidden}
+.seg button,.seg>*{font-family:var(--fm);font-size:14px;padding:8px 16px;border:0;border-left:2px solid var(--ink);background:var(--paper);color:var(--ink);cursor:pointer}
+.seg>:first-child{border-left:0}
+.seg .on,.seg>.on{background:var(--ink);color:var(--paper)}
+input.rng{width:100%;max-width:340px;display:block;margin:14px auto 0}
+.cap-step{min-height:90px}
+.pcol{display:flex;flex-direction:column;justify-content:center}.pcol .pns{flex:0 0 auto}.pcol .aside{margin-top:18px}
+</style>
+<script>window.SIM={};window.OVR={};</script>
+<script src="slide-sim/a.js"></script>
+<script src="slide-sim/b.js"></script>
+<script src="slide-sim/c.js"></script>
+</head>
+<body>
+<div id="bar"></div>
+<div id="stage"></div>
+<div id="notes"></div>
+<script>
+/* ---------- immagini dalla documentazione ufficiale (collegate, non scaricate) ---------- */
+const UM='https://docs.unity.com/api/media?file=/engine/6000.6/media/images/',UG='https://docs.unity3d.com/Packages/com.unity.ugui@2.0/manual/images/',FONTE='Fonte: Unity Manual 6.6';
+const HUD=f=>'../Documentazione/img/'+f+'.jpg';
+function cropFig(f,box,label){const[x0,y0,x1,y1]=box,W=1280,H=720,cw=(x1-x0)/W,ch=(y1-y0)/H;return`<div class="fig"><div class="crop" style="aspect-ratio:${x1-x0}/${y1-y0};background-image:url('${HUD(f)}');background-size:${100/cw}% auto;background-position:${x0/W/(1-cw)*100}% ${y0/H/(1-ch)*100}%"></div><div class="cap"><b style="color:var(--ink)">${label}</b></div></div>`}
+/* ---------- grafiche riusate ---------- */
+const AR='<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z"/></marker></defs>';
+const G={
+cube:`<svg viewBox="0 0 560 390"><path d="M140 120 L280 70 L420 120 L280 170Z" fill="#e9e9e5" stroke="#1b1b1b" stroke-width="2"/><path d="M140 120 L280 170 L280 320 L140 270Z" fill="#d2d2cc" stroke="#1b1b1b" stroke-width="2"/><path d="M280 170 L420 120 L420 270 L280 320Z" fill="#f4f4f1" stroke="#1b1b1b" stroke-width="2"/><line x1="280" y1="170" x2="280" y2="320" stroke="#1b1b1b" stroke-width="6"/><circle cx="420" cy="120" r="9" fill="#1b1b1b"/><g stroke="#8c8c8c" stroke-width="1.2"><line x1="428" y1="112" x2="470" y2="70"/><line x1="276" y1="300" x2="200" y2="360"/><line x1="380" y1="215" x2="470" y2="215"/></g><text x="476" y="66">vertex</text><text x="150" y="376">edge</text><text x="476" y="220">face</text></svg>`,
+tri:`<svg viewBox="0 0 520 300"><rect x="60" y="40" width="200" height="200" fill="#e9e9e5" stroke="#1b1b1b" stroke-width="2.5"/><text x="80" y="275">quello che vedi</text><rect x="300" y="40" width="200" height="200" fill="#e9e9e5" stroke="#1b1b1b" stroke-width="2.5"/><line x1="300" y1="240" x2="500" y2="40" stroke="#1b1b1b" stroke-width="2.5"/><text x="320" y="275">2 triangles</text></svg>`,
+quad:`<svg viewBox="0 0 520 300">${AR}<rect x="190" y="60" width="18" height="170" fill="#1b1b1b"/><path d="M208 145 H320" stroke="#1b1b1b" stroke-width="3" marker-end="url(#a)"/><text x="235" y="130">normal</text><text x="340" y="140" style="font-weight:700">DA QUI</text><text x="340" y="160">la vedi</text><text x="30" y="140" style="font-weight:700">DA QUI</text><text x="30" y="160">sparisce</text></svg>`,
+pivot:`<svg viewBox="0 0 560 300"><text x="20" y="30" style="font-weight:700">PIVOT AL CENTRO</text><rect x="80" y="60" width="16" height="180" fill="#e9e9e5" stroke="#1b1b1b" stroke-width="2"/><rect x="80" y="60" width="16" height="180" fill="none" stroke="#1b1b1b" stroke-dasharray="5 4" transform="rotate(-60 88 150)"/><circle cx="88" cy="150" r="7" fill="#1b1b1b"/><text x="20" y="280">gira su se stessa</text><text x="310" y="30" style="font-weight:700">PIVOT SUL CARDINE</text><rect x="370" y="60" width="16" height="180" fill="#e9e9e5" stroke="#1b1b1b" stroke-width="2"/><rect x="370" y="60" width="16" height="180" fill="none" stroke="#1b1b1b" stroke-dasharray="5 4" transform="rotate(-60 370 240)"/><circle cx="370" cy="240" r="7" fill="#1b1b1b"/><text x="310" y="280">si apre come una porta</text></svg>`,
+local:`<svg viewBox="0 0 540 360"><line x1="40" y1="320" x2="510" y2="320" stroke="#1b1b1b" stroke-width="2"/><line x1="40" y1="320" x2="40" y2="20" stroke="#1b1b1b" stroke-width="2"/><text x="492" y="345">X</text><text x="16" y="30">Y</text><text x="48" y="345">(0,0) centro del mondo</text><rect x="150" y="160" width="150" height="150" fill="#e9e9e5" stroke="#1b1b1b" stroke-width="2.5"/><text x="160" y="300">parent: altare</text><circle cx="225" cy="235" r="6" fill="#1b1b1b"/><rect x="330" y="60" width="54" height="54" fill="#1b1b1b"/><circle cx="357" cy="87" r="5" fill="#f4f4f1"/><line x1="225" y1="235" x2="357" y2="87" stroke="#1b1b1b" stroke-width="1.5" stroke-dasharray="6 5"/><text x="330" y="40">child: offerta</text><text x="392" y="92" style="font-size:13px">local (1.3, 1.5)</text></svg>`,
+uv:`<svg viewBox="0 0 560 320"><g fill="#e9e9e5" stroke="#1b1b1b" stroke-width="2"><rect x="120" y="20" width="80" height="80"/><rect x="40" y="100" width="80" height="80"/><rect x="120" y="100" width="80" height="80" fill="#d2d2cc"/><rect x="200" y="100" width="80" height="80"/><rect x="280" y="100" width="80" height="80"/><rect x="120" y="180" width="80" height="80"/></g><text x="40" y="300">UV: la scatola aperta e stesa</text><text x="390" y="150">ogni faccia</text><text x="390" y="170">ha il suo pezzo</text><text x="390" y="190">di immagine</text></svg>`,
+tiling:`<svg viewBox="0 0 560 300"><rect x="40" y="30" width="200" height="200" fill="none" stroke="#1b1b1b" stroke-width="2.5"/><path d="M40 30 L240 230 M240 30 L40 230" stroke="#8c8c8c"/><text x="40" y="265">Tiling 1, 1</text><g stroke="#1b1b1b" fill="none"><rect x="320" y="30" width="200" height="200" stroke-width="2.5"/><path d="M370 30V230M420 30V230M470 30V230M320 80H520M320 130H520M320 180H520"/></g><text x="320" y="265">Tiling 4, 4</text></svg>`,
+trigger:`<svg viewBox="0 0 560 290">${AR}<text x="20" y="28" style="font-weight:700">COLLIDER</text><rect x="170" y="60" width="40" height="170" fill="#1b1b1b"/><circle cx="120" cy="200" r="22" fill="#e9e9e5" stroke="#1b1b1b" stroke-width="2"/><path d="M60 200 H92" stroke="#1b1b1b" stroke-width="2" marker-end="url(#a)"/><text x="20" y="270">il giocatore si ferma</text><text x="300" y="28" style="font-weight:700">TRIGGER</text><rect x="400" y="60" width="100" height="170" fill="none" stroke="#1b1b1b" stroke-width="2" stroke-dasharray="7 5"/><circle cx="450" cy="200" r="22" fill="#e9e9e5" stroke="#1b1b1b" stroke-width="2"/><text x="300" y="270">ci passa, e la zona avvisa</text></svg>`,
+leak:`<svg viewBox="0 0 560 300">${AR}<circle cx="70" cy="80" r="26" fill="#1b1b1b"/><text x="40" y="135">light</text><rect x="250" y="40" width="6" height="220" fill="#1b1b1b"/><text x="200" y="285">single-sided wall</text><path d="M100 95 L400 190" stroke="#1b1b1b" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#a)"/><text x="360" y="230">la luce passa:</text><text x="360" y="250">da dietro il muro</text><text x="360" y="270">non fa ombra</text></svg>`,
+keys:`<svg viewBox="0 0 560 230"><line x1="30" y1="150" x2="530" y2="150" stroke="#1b1b1b" stroke-width="2"/><g fill="#1b1b1b"><path d="M80 140l10 10-10 10-10-10z"/><path d="M280 140l10 10-10 10-10-10z"/><path d="M480 140l10 10-10 10-10-10z"/></g><text x="50" y="190">pose A</text><text x="250" y="190">pose B</text><text x="450" y="190">pose A</text><text x="120" y="92" style="fill:#585858">Unity riempie i fotogrammi in mezzo</text><line x1="180" y1="100" x2="180" y2="140" stroke="#8c8c8c" stroke-width="1.2"/><text x="30" y="40" style="font-weight:700">KEYFRAME</text></svg>`,
+bones:`<svg viewBox="0 0 400 360"><g stroke="#1b1b1b" stroke-width="3" fill="none"><circle cx="200" cy="50" r="24" fill="#e9e9e5"/><line x1="200" y1="74" x2="200" y2="190"/><line x1="200" y1="100" x2="130" y2="160"/><line x1="130" y1="160" x2="100" y2="220"/><line x1="200" y1="100" x2="270" y2="160"/><line x1="270" y1="160" x2="300" y2="220"/><line x1="200" y1="190" x2="160" y2="270"/><line x1="160" y1="270" x2="150" y2="340"/><line x1="200" y1="190" x2="240" y2="270"/><line x1="240" y1="270" x2="250" y2="340"/></g><g fill="#1b1b1b"><circle cx="200" cy="100" r="6"/><circle cx="130" cy="160" r="6"/><circle cx="270" cy="160" r="6"/><circle cx="200" cy="190" r="6"/><circle cx="160" cy="270" r="6"/><circle cx="240" cy="270" r="6"/></g><text x="285" y="155">joint</text><text x="20" y="320">bone</text><line x1="60" y1="315" x2="150" y2="300" stroke="#8c8c8c"/></svg>`,
+retarget:`<div class="flow"><div class="fb"><div class="cap">MIXAMO</div><h3>Animazione</h3><p>Camminata fatta su un altro corpo</p></div><div class="ar">→</div><div class="fb d"><div class="cap">UNITY</div><h3>Avatar Humanoid</h3><p>Testa, braccia, gambe: una mappa comune</p></div><div class="ar">→</div><div class="fb"><div class="cap">IL KIT</div><h3>Legionario</h3><p>La stessa camminata sul nostro personaggio</p></div></div>`,
+shading:`<svg viewBox="0 0 560 300"><defs><radialGradient id="sg" cx="38%" cy="35%" r="70%"><stop offset="0" stop-color="#f4f4f1"/><stop offset=".55" stop-color="#9a9a96"/><stop offset="1" stop-color="#3a3a3a"/></radialGradient></defs><g stroke="#1b1b1b" stroke-width="1.2"><polygon points="140,40 199,56 242,99 258,158 242,217 199,260 140,276 81,260 38,217 22,158 38,99 81,56" fill="#8c8c8c"/><polygon points="140,40 199,56 140,158" fill="#e9e9e5"/><polygon points="81,56 140,40 140,158" fill="#f4f4f1"/><polygon points="38,99 81,56 140,158" fill="#e9e9e5"/><polygon points="199,56 242,99 140,158" fill="#d2d2cc"/><polygon points="22,158 38,99 140,158" fill="#d2d2cc"/><polygon points="242,99 258,158 140,158" fill="#b4b4ae"/><polygon points="38,217 22,158 140,158" fill="#b4b4ae"/><polygon points="258,158 242,217 140,158" fill="#8c8c8c"/><polygon points="81,260 38,217 140,158" fill="#8c8c8c"/><polygon points="242,217 199,260 140,158" fill="#6e6e6a"/><polygon points="140,276 81,260 140,158" fill="#6e6e6a"/><polygon points="199,260 140,276 140,158" fill="#585858"/></g><circle cx="420" cy="158" r="118" fill="url(#sg)" stroke="#1b1b1b" stroke-width="1.2"/><text x="95" y="296">flat shading</text><text x="365" y="296">smooth shading</text></svg>`,
+sky:`<svg viewBox="0 0 560 330"><defs><marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z"/></marker></defs><rect x="170" y="110" width="16" height="190" fill="#1b1b1b"/><rect x="420" y="110" width="16" height="190" fill="#1b1b1b"/><line x1="150" y1="300" x2="460" y2="300" stroke="#1b1b1b" stroke-width="3"/><line x1="186" y1="110" x2="420" y2="110" stroke="#8c8c8c" stroke-width="1.5" stroke-dasharray="6 5"/><circle cx="300" cy="262" r="14" fill="#e9e9e5" stroke="#1b1b1b" stroke-width="2"/><rect x="292" y="276" width="16" height="24" fill="#e9e9e5" stroke="#1b1b1b" stroke-width="2"/><rect x="236" y="196" width="30" height="20" rx="3" fill="#1b1b1b"/><path d="M262 200 L330 40 M262 212 L390 70" stroke="#1b1b1b" stroke-width="1.5" marker-end="url(#a2)"/><g stroke="#8c8c8c" stroke-width="1.2"><line x1="236" y1="206" x2="80" y2="206"/><line x1="300" y1="110" x2="300" y2="20" stroke-dasharray="0"/><line x1="436" y1="200" x2="470" y2="200"/></g><text x="10" y="211">camera</text><text x="310" y="24">sky</text><line x1="168" y1="74" x2="205" y2="108" stroke="#8c8c8c" stroke-width="1.2"/><text x="10" y="60" style="fill:#585858">nessun soffitto,</text><text x="10" y="80" style="fill:#585858">nessun collider</text><text x="476" y="205">wall</text></svg>`,
+room:`<svg viewBox="0 0 560 320"><rect x="60" y="30" width="440" height="240" fill="#2a2a28"/><path d="M60 30 L150 90 L410 90 L500 30" fill="none" stroke="#585858" stroke-width="1.5"/><path d="M60 270 L150 220 L410 220 L500 270" fill="none" stroke="#585858" stroke-width="1.5"/><line x1="150" y1="90" x2="150" y2="220" stroke="#585858" stroke-width="1.5"/><line x1="410" y1="90" x2="410" y2="220" stroke="#f4f4f1" stroke-width="5"/><path d="M410 220 L470 255" stroke="#f4f4f1" stroke-width="4" opacity=".8"/><line x1="418" y1="150" x2="520" y2="150" stroke="#8c8c8c" stroke-width="1.2"/><text x="165" y="305">la luce entra dallo spigolo</text></svg>`,
+snapx:`<svg viewBox="0 0 600 330"><defs><marker id="ax" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0 0L10 5L0 10z" fill="#1b1b1b"/></marker><marker id="ag" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#b4b4ae"/></marker></defs><g stroke="#d2d2cc" stroke-width="1"><line x1="60" y1="60" x2="60" y2="270"/><line x1="140" y1="60" x2="140" y2="270"/><line x1="220" y1="60" x2="220" y2="270"/><line x1="300" y1="60" x2="300" y2="270"/><line x1="380" y1="60" x2="380" y2="270"/><line x1="460" y1="60" x2="460" y2="270"/><line x1="540" y1="60" x2="540" y2="270"/></g><rect x="100" y="150" width="80" height="80" fill="none" stroke="#8c8c8c" stroke-width="1.5" stroke-dasharray="6 5"/><rect x="340" y="150" width="80" height="80" fill="#e9e9e5" stroke="#1b1b1b" stroke-width="2"/><line x1="380" y1="190" x2="380" y2="92" stroke="#b4b4ae" stroke-width="4" marker-end="url(#ag)"/><line x1="380" y1="190" x2="330" y2="240" stroke="#b4b4ae" stroke-width="4" marker-end="url(#ag)"/><line x1="380" y1="190" x2="500" y2="190" stroke="#1b1b1b" stroke-width="6" marker-end="url(#ax)"/><path d="M140 290 H380" stroke="#1b1b1b" stroke-width="1.5" stroke-dasharray="4 4"/><path d="M140 284 V296 M220 284 V296 M300 284 V296 M380 284 V296" stroke="#1b1b1b" stroke-width="1.5"/><text x="512" y="196" style="fill:#1b1b1b;font-weight:700">X</text><text x="372" y="80" style="fill:#8c8c8c">Y</text><text x="312" y="262" style="fill:#8c8c8c">Z</text><text x="100" y="138" style="fill:#8c8c8c">prima</text><text x="440" y="138">dopo</text><text x="150" y="318">scatta di 1 unità alla volta lungo X</text></svg>`,
+ik:`<svg viewBox="0 0 560 300">${AR}<text x="20" y="30" style="font-weight:700">FORWARD KINEMATICS</text><g stroke="#1b1b1b" stroke-width="4"><line x1="80" y1="80" x2="130" y2="170"/><line x1="130" y1="170" x2="110" y2="250"/></g><text x="20" y="285">hip → knee → foot</text><text x="310" y="30" style="font-weight:700">IK</text><g stroke="#1b1b1b" stroke-width="4"><line x1="370" y1="80" x2="430" y2="150"/><line x1="430" y1="150" x2="440" y2="210"/></g><rect x="410" y="210" width="90" height="12" fill="#8c8c8c"/><text x="310" y="285">target: il piede</text></svg>`,
+states:`<svg viewBox="0 0 560 280">${AR}<rect x="20" y="110" width="110" height="46" rx="8" fill="#8c8c8c"/><text x="34" y="139" style="fill:#f4f4f1">Entry</text><rect x="200" y="110" width="150" height="46" rx="8" fill="#1b1b1b"/><text x="214" y="139" style="fill:#f4f4f1">Locomotion</text><rect x="420" y="40" width="120" height="46" rx="8" fill="#e9e9e5" stroke="#1b1b1b"/><text x="434" y="69">Interact</text><rect x="420" y="180" width="120" height="46" rx="8" fill="#e9e9e5" stroke="#1b1b1b"/><text x="434" y="209">PickUp</text><path d="M130 133H195M350 125L415 70M350 141L415 196" stroke="#1b1b1b" stroke-width="2" marker-end="url(#a)"/><text x="355" y="270" style="font-size:13px">frecce = transitions</text></svg>`,
+blend:`<svg viewBox="0 0 520 340"><rect x="160" y="20" width="200" height="56" rx="10" fill="#1b1b1b"/><text x="178" y="44" style="fill:#f4f4f1">Locomotion</text><text x="178" y="64" style="fill:#c9c9c4;font-size:12px">Blend Tree 1D · Speed</text><path d="M260 76 L90 170 M260 76 L260 170 M260 76 L430 170" stroke="#1b1b1b" stroke-width="2"/><rect x="30" y="170" width="120" height="50" rx="8" fill="#e9e9e5" stroke="#1b1b1b"/><text x="50" y="200">Idle · 0</text><rect x="200" y="170" width="120" height="50" rx="8" fill="#e9e9e5" stroke="#1b1b1b"/><text x="216" y="200">Walk · 1.6</text><rect x="370" y="170" width="120" height="50" rx="8" fill="#e9e9e5" stroke="#1b1b1b"/><text x="388" y="200">Run · 4.5</text><line x1="40" y1="290" x2="480" y2="290" stroke="#1b1b1b" stroke-width="2"/><circle cx="138" cy="290" r="8" fill="#1b1b1b"/><text x="40" y="322">Speed = 0</text><text x="385" y="322">Speed = 4.5</text><text x="98" y="272">1: un misto</text></svg>`,
+proj:`<svg viewBox="0 0 1000 300"><rect x="10" y="10" width="980" height="280" rx="10" fill="none" stroke="#1b1b1b" stroke-width="2.5"/><text x="30" y="42" style="font-weight:700">Project</text><g fill="none" stroke="#1b1b1b" stroke-width="1.8"><rect x="30" y="62" width="460" height="208" rx="8"/><rect x="510" y="62" width="460" height="208" rx="8"/></g><text x="50" y="92">Scene · Demo_Start.unity</text><text x="530" y="92">Scene · Demo_Fine.unity</text><g fill="#e9e9e5" stroke="#1b1b1b"><rect x="50" y="112" width="130" height="56" rx="6"/><rect x="195" y="112" width="130" height="56" rx="6"/><rect x="340" y="112" width="130" height="56" rx="6"/><rect x="530" y="112" width="130" height="56" rx="6"/><rect x="675" y="112" width="130" height="56" rx="6"/><rect x="820" y="112" width="130" height="56" rx="6"/></g><text x="66" y="145">Wall</text><text x="211" y="145">Light</text><text x="356" y="145">Player</text><text x="546" y="145">Altar</text><text x="691" y="145">Door</text><text x="836" y="145">Player</text><text x="50" y="200" style="fill:#585858">GameObject</text><text x="530" y="200" style="fill:#585858">GameObject</text></svg>`,
+mat:`<div class="chain"><div><h3>Texture</h3><p>L'immagine: la pietra fotografata o dipinta</p></div><div><h3>Material</h3><p>La ricetta: quali texture, che colore, quanto lucido</p></div><div><h3>Shader</h3><p>Il programma che calcola come reagisce alla luce</p></div></div>`,
+prefab:`<div class="flow"><div class="fb"><div class="cap">NEL PROJECT</div><h3>Prefab</h3><p>Lo stampo</p></div><div class="ar">→</div><div class="fb"><div class="cap">NELLA SCENA</div><h3>Instance</h3><p>Le copie, con l'icona blu</p></div><div class="ar">→</div><div class="fb d"><div class="cap">SU UNA COPIA</div><h3>Override</h3><p>Una modifica solo per lei, in grassetto</p></div></div>`,
+xy:`<div class="chain"><div><h3>Quando succede X</h3><p>Premi E, posi l'offerta, entri in una zona</p></div><div><h3>fai Y</h3><p>Apri la porta, accendi il braciere, mostra la scheda</p></div></div>`,
+};
+
+/* ---------- contenuti ----------
+   ch: apertura di capitolo (num, t, min, lead). Le altre: k = codice del sottocapitolo, t = titolo.
+   vis: {shot}|{img,fit}|{g: nome grafica}|{html}. wide: grafica sopra, testo sotto. */
+const D=[
+{cover:1},
+
+{k:'0a',t:'Chi sono',hero:'slide-img/cris.webp',name:['Cristian','La Porta'],say:'Chi sono',n:'Tempo previsto: 3 minuti. Un minuto, non di più: chi sei, cosa fai, perché sei qui. La promessa del "niente codice" abbassa subito l\'ansia di chi parte da zero: oggi si costruisce un livello con pezzi già pronti, e si capisce perché funzionano.'},
+
+{ch:'01',t:'Cos\'è *Unity*',min:7,lead:'Il programma con cui si fanno i videogiochi, e quelli famosi che sono nati qui.'},
+{k:'1a',say:"Il motore fa la parte difficile. Voi decidete cosa c'è e come si comporta.",t:'Un motore di gioco *lavora per te*',p:['Un gioco deve ridisegnare tutto il mondo 3D decine di volte al secondo, far cadere le cose, leggere tastiera e mouse, suonare.','Il **motore di gioco** fa questa parte difficile. Tu decidi che cosa c\'è nel mondo e come si comporta.'],n:'Esempio: senza motore, per far cadere una pietra bisognerebbe scrivere la fisica da zero.'},
+{k:'1b',t:'Cosa fa Unity *al posto tuo*',defs:[['Rendering','Disegna il mondo, le luci e le ombre'],['Physics','Gravità, urti, oggetti che non si attraversano'],['Input','Tastiera, mouse, gamepad'],['Audio','Suoni nello spazio, musica'],['Build','Trasforma il progetto in un gioco che gira da solo']]},
+{k:'1c',t:'Project, Scene, *GameObject*',vis:{html:G.proj},wide:1,p:['Il progetto è la scatola grande. Dentro ci sono le scene, cioè i livelli, e dentro ogni scena ci sono i GameObject.'],n:'Apri la cartella del progetto nel Finder per far vedere che è davvero una cartella di file.'},
+{k:'1d',t:'Fatti con Unity',vis:{games:[['Hollow Knight',367520],['Cuphead',268910],['Ori and the Blind Forest',387290],['Among Us',945360],['Cities: Skylines',255710],['Outer Wilds',753640],['Subnautica',264710],['Valheim',892970],['Fall Guys',1097150],['Beat Saber',620980]]},wide:1,n:'Copertine ufficiali da Steam. Chiedi alla classe quali conoscono: 2D, 3D, VR, multiplayer. Lo stesso strumento per stili diversissimi.'},
+{k:'1e',say:'Editor: dove si costruisce.<br>Build: il gioco che date agli altri.',t:'L\'editor e il *gioco finito*',p:['Oggi lavoriamo nell\'**editor**: il cantiere, dove si costruisce e si prova.','Il gioco che si dà agli altri è la **build**, un programma che gira senza Unity. Ci torniamo alla fine.']},
+
+{ch:'02',t:'Editor *interface*',min:10,lead:'Quattro finestre e un\'idea: tutto è fatto di pezzi.'},
+{k:'2a',t:'Le finestre *dell\'editor*',areas:{img:'../Documentazione/img/passo_01_editor.jpg',size:[1600,904],intro:'Quattro finestre. Ognuna risponde a una domanda diversa.',items:[
+{name:'Scene · Game',box:[0,108,898,640],p:'**Scene**: il cantiere, ti muovi liberamente e costruisci. **Game**: quello che vede il giocatore, dalla sua camera.',aside:'Muovere la vista nella Scene non sposta la camera del gioco.'},
+{name:'Hierarchy',box:[900,570,1144,904],p:'L\'elenco di tutto quello che c\'è **nella scena aperta**: muri, luci, giocatore, oggetti. Un oggetto dentro un altro è suo child: si muove con lui.'},
+{name:'Project',box:[1146,570,1600,904],p:'Tutto quello che sta **sul disco**: modelli, materiali, suoni, prefab, scene. È il magazzino.',aside:'Hierarchy e Project non sono la stessa cosa: la prima è la scena, la seconda il magazzino.'},
+{name:'Inspector',box:[900,108,1600,568],p:'Mostra le proprietà dell\'oggetto selezionato. Qui si cambia quasi tutto, senza scrivere codice.'}]}},
+{k:'2e',t:'GameObject e *Component*',parts:{head:'GAMEOBJECT · BRACIERE',intro:'Da solo un GameObject **non fa niente**: è un contenitore. I **component** gli danno un aspetto, un corpo e un comportamento.',items:[{name:'Transform',p:'Dove sta, come è girato, quanto è grande. È l\'unico component che c\'è sempre e non si può spegnere.'},{name:'Mesh Renderer',cb:1,p:'Come si vede. Se lo spegni, il braciere c\'è ancora ma è invisibile: ci sbatti contro.'},{name:'Collider',cb:1,p:'Il suo corpo fisico. Se lo spegni, lo vedi ma ci passi attraverso.'},{name:'BrazierSwitch',cb:1,p:'Cosa fa: uno script del kit. Se lo spegni, lo vedi e lo tocchi, ma premere E non lo accende.'}]},warn:'Quando un oggetto "non fa niente", quasi sempre gli manca un component.',n:'Dal vivo: disattiva un componente alla volta con la spunta e premi Play.'},
+{k:'2f',t:'Muoversi *nella scena*',table:{h:['Comando','Cosa fa'],r:[['Tasto destro + WASD','Voli nella scena come in un gioco'],['Rotella','Avvicini e allontani'],['F','Inquadri l\'oggetto selezionato'],['Alt + trascina','Giri attorno all\'oggetto (Option su Mac)'],['W · E · R','Sposta, ruota, scala l\'oggetto selezionato']]},n:'Fallo fare a voce: un volontario dice dove andare e tu ti muovi.'},
+{k:'2g',big:1,t:'Quello che cambi *in Play* si perde.',p:['Quando il tasto Play è acceso sei in prova: puoi cambiare valori per vedere l\'effetto, ma con Stop tutto torna com\'era.'],n:'Fallo succedere: in Play sposta la statua, Stop, torna indietro. Consiglio: Preferences > Colors > Playmode tint più scuro.'},
+{k:'2h',t:'Se non funziona, *cosa controllare*',table:{h:['Cosa vedi','Cosa controllare','Perché'],r:[["Una finestra è sparita", "Window > General", "Da lì si riaprono Scene, Game, Hierarchy, Inspector, Project, Console"], ["Il layout è tutto in disordine", "Window > Layouts > Default", "Torna la disposizione iniziale"], ["Non trovo un oggetto nella scena", "Selezionalo nella Hierarchy e premi F", "La vista va dritta su di lui"], ["Ho perso le modifiche", "Eri in Play?", "Quello che cambi in Play si perde con Stop"], ["L'Inspector non cambia", "Il lucchetto in alto all'Inspector", "Se è chiuso, l'Inspector resta fermo su un oggetto"]]}},
+
+{ch:'03',t:'La *demo*',min:5,lead:'Tutti questi paroloni servono a fare giochi come questo.'},
+{k:'3b',big:1,huge:1,t:'Vi piace?',n:'Il tono è scherzoso: avete sofferto la spiegazione, ma adesso tutto quello che abbiamo detto serve a capire perché questa demo è rotta.'},
+{k:'3c',t:'Gli errori sono *la mappa*',table:{h:['Cosa vedete','Ne parliamo in'],r:[['Un muro trasparente','3D models'],['La luce che passa tra le pareti','Light leaking'],['Il fuoco accanto al braciere','VFX'],['Il cielo dentro il tempio','Camera e level design'],['Il Legionario che cammina storto','Animation']]},n:'DA FARE: nella scena oggi ci sono gli errori di normali, fuoco, soffitto e animazione. Luce tra le pareti e gli altri vanno aggiunti alla scena prima della lezione.'},
+
+{ch:'04',t:'3D *models*',min:16,lead:'Di cosa è fatto un oggetto, e perché a volte sparisce.'},
+{k:'4a',t:'Vertex, edge, *face*',vis:{g:'cube'},p:['Ogni modello 3D è fatto di **vertices** (punti), uniti da **edges** (linee), che chiudono delle **faces** (superfici).','Il modello non ha niente dentro: è solo una buccia.']},
+{k:'4b',t:'*Triangles*',vis:{g:'tri'},p:['La scheda video conosce solo triangoli. Anche un quadrato, per lei, sono due triangoli.']},
+{k:'4c',t:'Il *polycount*',poly:1,p:['Il polycount è il numero di triangles. Più triangles, più lavoro per la scheda video a ogni fotogramma.','Un cubo ha 12 triangles. Un personaggio ne ha decine di migliaia.'],warn:'In Play, il pulsante Stats in alto a destra della Game view mostra Triangles e Vertices.',n:'DA FARE: misurare i triangles del Legionario con Stats in Play e dirlo a voce.'},
+{k:'4d',t:'Mesh Filter e *Mesh Renderer*',vis:{img:UM+'GameObjectCubeExample1.png',fit:1,up:1,src:1},defs:[['Mesh Filter','Quale forma: il modello 3D'],['Mesh Renderer','La disegna, con quali materiali e se fa ombra']]},
+{k:'4e',t:'*Normals* e backface culling',vis:{g:'quad'},p:['Ogni face ha un lato davanti, indicato dalla sua **normal**. Unity disegna solo quel lato e salta quello dietro (backface culling), per risparmiare lavoro.','Se un muro è girato al contrario, dall\'interno ci vedi attraverso.'],n:'Dal vivo: GameObject > 3D Object > Quad, poi gira la camera. Da dietro sparisce. Poi mostra il muro della demo. Aggiungere due screenshot del Quad da davanti e da dietro.'},
+{k:'4f',t:'Render Face: *Both*',vis:{img:'https://docs.unity3d.com/Packages/com.unity.render-pipelines.universal@14.0/manual/images/Inspectors/Shaders/Lit.png',fit:1,cap:'Fonte: documentazione URP 14',w:.55},steps:[['Seleziona il materiale','Quello del muro, nel Project'],['Surface Options','Shader Universal Render Pipeline/Lit'],['Render Face: Both','Il muro si vede da tutti e due i lati']],warn:'Così si disegna il doppio: va bene per foglie, stoffe e muri sottili. La correzione vera è girare la faccia nel modello.',n:'Se qualcuno usa Blender, spiega a voce come girare le normali lì.'},
+{k:'4g',t:'Smooth o *flat shading*',vis:{g:'shading'},p:['Anche i vertici hanno una normale. Se i vertici vicini la condividono, la luce scivola e la superficie sembra liscia. Se no, si vede ogni faccia.','Nell\'import del modello: scheda Model, **Normals** su Calculate e **Smoothing Angle** per decidere da che angolo si vede lo spigolo.']},
+{k:'4h',t:'Il *pivot*',vis:{g:'pivot'},p:['Ogni oggetto si sposta, ruota e scala attorno al suo **pivot**, che non sempre è al centro.'],warn:'Se il pivot è sbagliato, metti l\'oggetto dentro un GameObject vuoto che fa da cardine.',n:'Il pulsante Pivot/Center in alto nella Scene cambia solo il gizmo, non il gioco. Esempio della porta ripreso dal corso Unity.'},
+{k:'4i',t:'*Transform*',vis:{g:'local'},defs:[['Position','Dove sta, in metri'],['Rotation','Come è girato, in gradi'],['Scale','Quanto è grande'],['Local','Rispetto al padre: è quello che vedi nell\'Inspector']],n:'Trascina l\'offerta dentro l\'altare: i numeri cambiano anche se l\'oggetto non si è mosso.'},
+{k:'4j',t:'1 unit = *1 metro*',vis:{img:UM+'model-import-settings.png',fit:1,src:1,w:.7},p:['In Unity un\'unità vale un metro. Un modello importato può arrivare enorme o minuscolo, se chi l\'ha fatto usava un\'altra misura.'],steps:[['Metti un Cube accanto','È alto un metro: fa da righello'],['Controlla l\'import','Scheda Model: Scale Factor e Convert Units'],['Non scalare in scena','Correggi l\'import, così vale per tutte le copie']]},
+{k:'4k',t:'File format e *import*',vis:{img:UM+'FBXImporter-Materials-1.png',fit:1,up:1,src:1},defs:[['FBX','Il formato giusto: forma, materiali, scheletro, animazioni'],['OBJ','Solo la forma, niente scheletro'],['Import','Trascini il file nel Project, Unity lo converte']],warn:'Se il modello arriva bianco, scheda Materials del modello: Extract Textures ed Extract Materials.'},
+{k:'4l',t:'Se non funziona, *cosa controllare*',table:{h:['Cosa vedi','Cosa controllare','Perché'],r:[["Un muro sparisce da un lato", "Render Face nel materiale", "Si vede solo il lato della normale"], ["Il modello è enorme o minuscolo", "Import: Scale Factor", "Chi l'ha fatto usava un'altra unità"], ["Ruota attorno a un punto strano", "Il pivot, con Pivot attivo in alto", "Gira attorno al pivot, non al centro"], ["Si vedono le faccette", "Import: Normals e Smoothing Angle", "Le normali dei vertici non sono condivise"], ["Il gioco scatta", "Stats: Triangles", "Troppi triangoli da disegnare"]]}},
+
+{ch:'05',t:'Texture e *material*',min:11,lead:'Perché la pietra sembra pietra.'},
+{k:'5a',t:'Cos\'è una *texture*',vis:{img:'../Documentazione/img/passo_05_offerta.jpg'},p:['Una texture è un\'immagine stesa sulla superficie di un modello. È lei che fa sembrare una forma grigia pietra, legno o stoffa.']},
+{k:'5b',t:'*UV mapping*',vis:{g:'uv'},p:['Immagina di aprire una scatola di cartone e stenderla piatta. Le **UV** dicono quale pezzo di immagine va su quale faccia.','Le prepara chi fa il modello. In Unity si usano e basta.']},
+{k:'5c',t:'Texture, material, *shader*',vis:{html:G.mat},wide:1,p:['La texture da sola non va sul modello: va dentro un **material**, e il material usa uno **shader**.']},
+{k:'5d',t:'Lit e *Unlit*',table:{h:['Shader','Come si comporta','Quando'],r:[['Lit','Reagisce alle luci: ombre, riflessi','Quasi sempre'],['Unlit','Ha sempre lo stesso colore, ignora le luci','Cielo, schermi, effetti']]},n:'Mostra la stessa statua con i due shader e spegni la luce.'},
+{k:'5e',t:'*Texture map*',vis:{img:UM+'BumpMapLitExample.jpg',fit:1,src:1},table:{h:['Mappa','Che cosa dà'],r:[['Base Map','Il colore, senza luci né ombre'],['Normal Map','Un rilievo finto: crepe e fughe'],['Metallic','Metallo o no'],['Smoothness','Lucido o opaco'],['Occlusion','Ombre nelle fessure']]}},
+{k:'5f',t:'Normal map e *normals*',vis:{img:UM+'BumpMapStoneExampleDay.jpg',fit:1,src:1},wide:1,p:['Stessa parola, due cose diverse.','Le **normali della mesh** dicono da che lato si vede una faccia. La **normal map** è un\'immagine che finge piccole pieghe per la luce, senza aggiungere triangoli.'],warn:'Una normal map non ripara un muro girato al contrario.'},
+{k:'5g',t:'Tiling e *offset*',vis:{g:'tiling'},defs:[['Tiling','Quante volte la texture si ripete'],['Offset','Di quanto si sposta']],p:['Un pavimento grande con Tiling 1 ha mattonelle enormi. Si alza il tiling invece di fare una texture gigante.']},
+{k:'5h',t:'Quanto pesa *una texture*',table:{h:['Lato','Memoria senza compressione'],r:[['512','circa 1 MB'],['1024 (1K)','circa 4 MB'],['2048 (2K)','circa 16 MB'],['4096 (4K)','circa 64 MB']]},p:['Ogni volta che il lato raddoppia, la memoria si moltiplica per quattro. Nell\'import della texture, **Max Size** decide la dimensione nel gioco.'],warn:'Le texture del Legionario sono molto grandi: nel kit vanno ridotte a 2K.'},
+{k:'5i',t:'Se non funziona, *cosa controllare*',table:{h:['Cosa vedi','Cosa controllare','Perché'],r:[["Il modello è rosa", "Lo shader del materiale", "Lo shader non è compatibile con URP: usa Universal Render Pipeline/Lit"], ["Mattonelle enormi o minuscole", "Tiling del materiale", "La texture si ripete troppo poco o troppo"], ["Il rilievo sembra sbagliato", "Import della texture: Texture Type Normal map", "Unity deve sapere che è una normal map"], ["La texture è sfocata", "Import della texture: Max Size", "È stata ridotta troppo"], ["Sembra tutto di plastica", "Smoothness del materiale", "Troppo lucido per pietra e legno"]]}},
+
+{ch:'06',t:'*Physics* e collider',min:9,lead:'Perché non si attraversano i muri.'},
+{k:'6a',t:'Il *Collider*',vis:{img:'https://docs.unity3d.com/2019.4/Documentation/uploads/Main/Inspector-BoxCollider.png',fit:1,cap:'Fonte: Unity Manual 2019.4',up:1},p:['Il modello si vede ma non si tocca. A toccare è il **collider**, una forma semplice e invisibile che Unity usa per gli urti.']},
+{k:'6b',t:'Quale *collider*',table:{h:['Tipo','Quando'],r:[['Box','Muri, gradini, casse: il più usato'],['Sphere','Palle, oggetti tondi'],['Capsule','Personaggi, colonne'],['Mesh','Forme complicate: preciso ma costoso']]},warn:'Un Box Collider è quasi sempre meglio di un Mesh Collider: più leggero e più affidabile.'},
+{k:'6c',say:"Con un Rigidbody l'oggetto cade, rimbalza, viene spinto.",t:'Rigidbody e *gravity*',p:['Il collider da solo sta fermo. Con un **Rigidbody** l\'oggetto cade, rimbalza, viene spinto.','Se è **Is Kinematic**, lo muovono un\'animazione o uno script, non la fisica.'],n:'Dal vivo: un Cube in aria, aggiungi Rigidbody, Play.'},
+{k:'6d',t:'Collider o *trigger*?',vis:{g:'trigger'},defs:[['Collider','Un corpo solido: muri, colonne'],['Trigger','Is Trigger attivo: una zona che segnala chi entra']],warn:'Un trigger sente qualcosa solo se uno dei due ha un Rigidbody o un Character Controller.'},
+{k:'6e',t:'Il *Character Controller*',vis:{img:UM+'Inspector-CharacterController.png',fit:1,src:1},p:['Il giocatore usa un **Character Controller**: una capsula che cammina, sale i gradini e si ferma contro i muri, senza rimbalzare come un Rigidbody.','Nel componente PlayerController si regolano velocità di camminata e di corsa, distanza e altezza della camera.']},
+{k:'6f',t:'*Gizmos*',vis:{img:'https://docs.unity3d.com/2022.3/Documentation/uploads/Main/GizmosMenu.png',fit:1,cap:'Fonte: Unity Manual 2022.3',w:.5},p:['Nella Scene, con **Gizmos** acceso, i collider sono contorni verdi. Le zone del kit hanno anche un colore loro.']},
+{k:'6g',t:'Se non funziona, *cosa controllare*',table:{h:['Cosa vedi','Cosa controllare','Perché'],r:[["Ci passo attraverso", "Ha un collider? Is Trigger è spento?", "Senza collider solido non c'è niente da urtare"], ["Cade nel vuoto", "Il pavimento ha un collider?", "Il pavimento si vede ma non si tocca"], ["La zona non reagisce", "Is Trigger acceso, giocatore dentro la forma verde", "Il trigger sente solo chi entra nella sua forma"], ["Mi blocco nel nulla", "I gizmo verdi attorno al punto", "Un collider più grande del modello"], ["L'oggetto vola via o trema", "Rigidbody: Is Kinematic", "Fisica e animazione lo muovono insieme"]]}},
+
+{pause:1},
+
+{ch:'07',t:'I *prefab*',min:7,lead:'Costruisci una volta, usa ovunque.'},
+{k:'7a',t:'Prefab e *instance*',vis:{img:UM+'prefab-workflow.png',fit:1,src:1},wide:1,defs:[['Prefab','Lo stampo, nel Project'],['Instance','Una copia nella scena, con l\'icona blu'],['Override','Una modifica solo su quella copia, in grassetto']]},
+{k:'7b',t:'Override: *Apply* e *Revert*',vis:{img:UM+'prefab-instance-overrides.png',fit:1,src:1,w:.7},defs:[['Apply','Porti la modifica nello stampo: cambiano tutte le copie'],['Revert','Butti la modifica: la copia torna come lo stampo']],n:'Dal vivo: tre bracieri, cambia la luce di uno solo, poi Apply e Revert.'},
+{k:'7c',t:'Nested Prefab e *Prefab Variant*',defs:[['Nested Prefab','Un prefab dentro un altro: il braciere dentro la sala'],['Prefab Variant','Un prefab figlio di un altro: tutto uguale tranne quello che cambi']],p:['Doppio clic su un prefab nel Project lo apri da solo e lo modifichi per tutti.']},
+{k:'7d',t:'I prefab *del kit*',table:{h:['Cartella','Cosa c\'è'],r:[['Modulari','Muri, pavimenti, colonne da comporre'],['Maggiori','Edifici e pezzi grandi'],['Decorazioni','Oggetti di arredo'],['Kit','Giocatore, porta, piastre, altare, braciere, zone, GameManager']]}},
+{k:'7e',t:'Se non funziona, *cosa controllare*',table:{h:['Cosa vedi','Cosa controllare','Perché'],r:[["Ho cambiato un braciere, gli altri no", "Overrides > Apply", "La modifica è rimasta solo su quella copia"], ["Ho cambiato il prefab, è cambiato ovunque", "Eri dentro lo stampo?", "Nello stampo, la modifica vale per tutte le copie"], ["Il prefab è rosso o \"Missing\"", "Hai spostato o cancellato il file fuori da Unity?", "I file si spostano solo dentro il Project"], ["Non so più com'era", "Overrides > Revert All", "La copia torna uguale allo stampo"]]}},
+
+{ch:'08',t:'*Interaction*',min:12,lead:'Quando succede qualcosa, fai qualcos\'altro.'},
+{k:'8a',t:'La regola *del kit*',vis:{html:G.xy},wide:1,p:['Tutto il kit funziona così, senza codice: ogni oggetto ha degli **eventi**, e tu dici cosa deve succedere quando scattano.'],n:'Se resta solo questa regola, la lezione è riuscita.'},
+{k:'8b',t:'*UnityEvent*',vis:{img:'../Documentazione/img/passo_06_onplaced.jpg',fit:1},p:['Un evento è una lista: ogni riga dice **quale oggetto** e **quale funzione**.','Interactable ha On Interact (premi E), l\'altare ha On Placed, il GameManager ha On Win.']},
+{k:'8c',t:'L\'altare *apre* la porta',vis:{img:'../Documentazione/img/passo_06_altare.jpg'},steps:[['Seleziona l\'altare','Nell\'Inspector trovi On Placed'],['Premi +','Si aggiunge una riga vuota'],['Trascina la porta','Dalla Hierarchy nel campo dell\'oggetto'],['Scegli la funzione','Door > Open, poi Play']],n:'RALLENTA QUI. La porta non sa niente dell\'altare: glielo dici tu.'},
+{k:'8d',t:'Gli altri *pezzi*',table:{h:['Prefab','Evento','Esempio'],r:[['Piastra','Quando qualcuno ci sale','Accende un braciere'],['Sequenza','Quando l\'ordine è giusto','Apre un passaggio'],['Braciere','Quando si accende','Fa avanzare un obiettivo'],['Zona trigger','Quando il giocatore entra','Mostra una scheda storica']]}},
+{k:'8e',t:'*Item Name*, oggetti con un nome',vis:{img:'../Documentazione/img/passo_05_offerta.jpg'},p:['La lucerna non è solo un modello: ha un nome e un\'icona, scritti nel componente **Collectible** (Item Name, Item Icon).','L\'altare chiede quel nome nel campo **Required Item Name**. Se lo scrivete uguale, si riconoscono.']},
+{k:'8f',t:'Objective e *WinZone*',vis:{img:'../Documentazione/img/hud_11_vittoria.jpg'},p:['Gli **obiettivi** sono la lista in alto a destra. Si completano dagli eventi.','La **zona finale** fa vincere solo quando gli obiettivi obbligatori sono fatti. Altrimenti mostra un messaggio.']},
+{k:'8g',t:'Se non funziona, *cosa controllare*',table:{h:['Cosa vedi','Cosa controllare','Perché'],r:[["Premo E e non succede niente", "La riga dell'evento ha oggetto e funzione?", "Un campo vuoto non chiama nessuno"], ["Succede la cosa sbagliata", "La funzione scelta", "Door > Open, non Close"], ["Il prompt \"E\" non compare", "Distanza e componente Interactable", "Sei troppo lontano o l'oggetto non è interagibile"], ["L'altare dice \"Ti serve…\"", "Il file dell'oggetto richiesto", "L'altare chiede un oggetto diverso da quello raccolto"], ["Non si vince mai", "Obiettivi obbligatori collegati", "La zona finale aspetta tutti gli obiettivi"]]}},
+
+{ch:'09',t:'*Script*',min:5,lead:'Non li scriverete. Ma è bene sapere che ci sono.'},
+{k:'9a',t:'Un componente è *un file*',vis:{html:'<pre>public class Door : MonoBehaviour\n{\n    public float speed = 2.5f;\n    public bool startOpen;\n\n    public void Open() { ... }\n}</pre>'},p:['Ogni componente del kit è un file C# nella cartella Scripts. Door, PressurePlate, GameManager: sono tutti script.']},
+{k:'9a2',t:'Ogni script del kit *si spiega da solo*',defs:[['Dove si mette','Su quale oggetto, o quale prefab trascinare'],['Cosa configurare','Ogni campo dell\'Inspector, uno per uno'],['Come si collega','A quale evento trascinare cosa'],['Esempio','Due righe: per fare X, fai Y']],p:['Aprite lo script dal Project: **in cima** c\'è un blocco di commenti con queste quattro parti. Non serve capire il codice per usarlo.'],n:'Mostrare Door.cs: il blocco in testa, e gli stessi nomi nell\'Inspector.'},
+{k:'9b',t:'Dal codice *all\'Inspector*',vis:{img:'https://docs.unity.com/api/media?file=/engine/6000.0/media/images/EditingVarInspector.png',fit:1,cap:'Fonte: Unity Manual 6.0',up:1},p:['Ogni valore **public** dello script diventa un campo nell\'Inspector. È per questo che potete cambiare tutto senza aprire il codice.']},
+{k:'9c',t:'Start e *Update*',defs:[['Start','Una volta, quando il gioco parte'],['Update','A ogni fotogramma, decine di volte al secondo']],n:'Solo per conoscenza. Chi è curioso lo approfondisce dopo l\'hackathon.'},
+{k:'9d',t:'Se non funziona, *cosa controllare*',table:{h:['Cosa vedi','Cosa controllare','Perché'],r:[["Play non parte, errori rossi", "Console: il primo errore in alto", "Con errori negli script il gioco non parte"], ["\"Missing script\" su un componente", "Lo script è stato cancellato o rinominato?", "Il componente non trova più il suo file"], ["Un campo non compare nell'Inspector", "È public nello script?", "Solo i valori public (o serializzati) si vedono"]]}},
+
+{ch:'10',t:'*Light leaking*',min:6,lead:'Perché il sole entra in una stanza chiusa.'},
+{k:'10a',t:'Il *sintomo*',vis:{g:'room'},p:['La stanza è chiusa, eppure lungo gli spigoli o sul pavimento entra luce. È uno degli errori più comuni nei livelli fatti a pezzi.']},
+{k:'10b',t:'Muri *single-sided*',vis:{g:'leak'},p:['Un muro fatto con un piano ha una faccia sola. Visto dal lato della luce, per le ombre è come se non ci fosse.'],warn:'Nel Mesh Renderer, Cast Shadows su **Two Sided** fa fare ombra da entrambi i lati.'},
+{k:'10c',t:'Shadow *bias*',p:['Le ombre in tempo reale vengono spostate un poco per evitare righe e puntini (il **bias**). Se il muro è più sottile di quello spostamento, la luce passa.'],defs:[['Bias','Nella luce, sezione Shadows: abbassalo con prudenza'],['Thickness','Muri di qualche decina di centimetri, non piani']]},
+{k:'10d',t:'Gap e *snapping*',vis:{g:'snapx'},p:['Due pezzi modulari messi a occhio lasciano fessure di pochi millimetri. Dall\'interno diventano righe di luce.'],warn:'Tieni premuto Ctrl (Cmd su Mac) mentre sposti: l\'oggetto scatta sulla griglia.'},
+{k:'10e',t:'Il *metodo giusto*',steps:[['Muri con spessore','Usa i pezzi modulari del kit, non piani'],['Pezzi sovrapposti','Meglio che si incastrino un poco che lasciare uno spazio'],['Snap sulla griglia','Ctrl o Cmd mentre trascini'],['Controlla da dentro','Con la camera del giocatore, non dall\'alto']]},
+{k:'10f',t:'Se non funziona, *cosa controllare*',table:{h:['Cosa vedi','Cosa controllare','Perché'],r:[["Righe di luce negli spigoli", "Fessure tra i pezzi", "I moduli non si toccano"], ["La luce attraversa un muro intero", "Muro a una faccia: Cast Shadows Two Sided", "Da dietro il muro non fa ombra"], ["Le ombre si staccano dagli oggetti", "Bias della luce troppo alto", "L'ombra viene spinta via troppo"], ["Puntini e strisce sulle superfici", "Bias della luce troppo basso", "La superficie fa ombra su se stessa"]]}},
+
+{ch:'11',t:'*Lighting*',min:19,lead:'Come si illumina una scena, e perché conviene "cuocere" la luce.'},
+{k:'11a',t:'Light *types*',vis:{grid:[[UM+'Light-Direct.jpg','Directional'],[UM+'Light-Point.jpg','Point'],[UM+'Light-Spot.jpg','Spot'],[UM+'AreaLights.png','Area']]},wide:1,p:['**Directional** come il sole, **Point** come una lampadina, **Spot** come un faro, **Area** come una finestra luminosa (solo con il bake).']},
+{k:'11b',t:'Realtime, *baked*, mixed',table:{h:['Modo','Come','Costo'],r:[['Realtime','Calcolata a ogni fotogramma: può muoversi','Alto'],['Baked','Calcolata una volta e salvata in immagini','Quasi zero'],['Mixed','Luce cotta, ombre degli oggetti in movimento in tempo reale','Medio']]},p:['Il bake è come una foto della luce: bellissima e leggera, ma non si muove.']},
+{k:'11c',t:'Il flag *Static*',vis:{img:UM+'GameObjectStaticDropDownMenu1.png',fit:1,src:1},wide:1,p:['Solo gli oggetti che non si muovono possono avere luce cotta. Si segnano con **Static**, in alto a destra nell\'Inspector, o con **Contribute GI** nel Mesh Renderer.'],warn:'Il giocatore, le porte e tutto ciò che si muove non va segnato Static.'},
+{k:'11d',say:"Generate Lightmap UVs, nell'import del modello.",t:'*Lightmap* UV',p:['La luce cotta si salva in immagini chiamate **lightmap**. Per stenderle sul modello servono UV apposite, senza sovrapposizioni.','Nell\'import del modello, scheda Model: **Generate Lightmap UVs**.'],warn:'Se dopo il bake un oggetto ha macchie strane, quasi sempre mancano queste UV.'},
+{k:'11e',t:'*Generate Lighting*',vis:{img:'https://docs.unity3d.com/2020.3/Documentation/uploads/Main/lighting-window-scene.png',fit:1,cap:'Fonte: Unity Manual 2020.3'},wide:1,steps:[['Luci in Baked o Mixed','Nel componente Light, campo Mode'],['Oggetti Static','Muri, pavimenti, colonne'],['Window > Rendering > Lighting','La finestra delle luci'],['Generate Lighting','E aspetta: la barra in basso a destra']]},
+{k:'11g',t:'Reflection *probe*',vis:{img:UM+'ReflectionProbeScene.jpg',fit:1,src:1},p:['Fotografa l\'ambiente attorno a sé e lo usa per i riflessi sulle superfici lucide. Nella demo è l\'oggetto **Riflessi**.']},
+{k:'11h',say:"Ogni luce con ombre ridisegna la scena un'altra volta.",t:'*Shadows* e costo',p:['Ogni luce realtime che fa ombra ridisegna la scena dal suo punto di vista. Dieci torce con ombre sono dieci volte il lavoro.'],warn:'Ombre realtime solo dove servono. Le torce decorative: niente ombre, o luce cotta.'},
+{k:'11i',t:'Skybox, environment, *fog*',vis:{img:'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/638230/ss_90dde9d4701385c7c7ffe22569ed1855b118ea4c.1920x1080.jpg',fit:1,cap:'Journey · Steam',w:1.2},defs:[['Skybox','Il cielo dietro a tutto'],['Environment Lighting','La luce che arriva da ogni direzione, anche in ombra'],['Fog','Rende lontane le cose lontane, e nasconde i bordi del livello']]},
+{k:'11i2',t:'Un cielo *vero*: gli HDRI',steps:[['Poly Haven','polyhaven.com, sezione HDRIs: gratis, uso libero (CC0)'],['Scarica un .hdr a 2k','Circa 5 MB: basta così'],['Meglio "Pure Sky"','Solo cielo, senza paesaggio'],['Un Material Skybox/Panoramic','Con il file .hdr come texture']],warn:'Nel kit sono già pronti, in Art/Skybox.',n:'I quattro materiali del kit: Sky_Tramonto, Sky_GiornoNuvole, Sky_AlbaCampo, Sky_AlbaColline. HDRI vuol dire immagine a 360 gradi con luce vera. Mostrare il sito, un cielo, e dire che i quattro del kit sono già materiali.'},
+{k:'11i3',t:'Mettere il cielo *nella scena*',steps:[['Window > Rendering > Lighting','Scheda Environment'],['Skybox Material','Trascina il materiale (es. Sky_Tramonto)'],['Il Sole deve andare d\'accordo','Il Sole della scena (Directional Light) e il sole del cielo devono stare dalla stessa parte'],['Material > Rotation','Gira il cielo finché il suo sole è dove sta la luce']],warn:'Con Environment Lighting su Skybox, anche la luce ambiente cambia con il cielo: riguardate il livello dopo averlo cambiato.',n:'Se la luce dà le ombre a sinistra e il sole nel cielo è a destra, il giocatore se ne accorge anche senza sapere perché.'},
+{k:'11j',t:'Se non funziona, *cosa controllare*',table:{h:['Cosa vedi','Cosa controllare','Perché'],r:[["Il bake non cambia niente", "Luci in Baked o Mixed, oggetti Static", "Solo luci e oggetti fermi entrano nel bake"], ["Macchie e strisce dopo il bake", "Import: Generate Lightmap UVs", "Mancano le UV per la luce cotta"], ["Una luce non fa ombra", "Componente Light: Shadow Type", "Le ombre sono spente"], ["Il bake non finisce mai", "Quanti oggetti hanno Contribute GI", "Troppi oggetti piccoli da cuocere"]]}},
+
+{ch:'12',t:'La *UI*',min:9,lead:'Testi, icone e pulsanti sopra il gioco.'},
+{k:'12a',t:'Il *Canvas*',vis:{img:'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/367520/ss_d5b6edd94e77ba6db31c44d8a3c09d807ab27751.1920x1080.jpg',fit:1,cap:'Hollow Knight · Steam',w:1.3},p:['Tutto quello che sta sopra il gioco (scritte, icone, pulsanti) vive dentro un **Canvas**. Nel kit è già dentro il prefab del GameManager.']},
+{k:'12b',t:'Screen Space o *World Space*',vis:{grid:[[UG+'GUI_Canvas_Screenspace_Overlay.png','Screen Space'],[UG+'GUI_Canvas_Worldspace.png','World Space']]},wide:1,defs:[['Screen Space','Incollata allo schermo: è quella del kit'],['World Space','Un cartello nello spazio 3D']],p:['Il Canvas del kit si adatta allo schermo partendo da 1920×1080, così la UI ha la stessa proporzione su ogni monitor.']},
+{k:'12c',t:'Anchors e *RectTransform*',vis:{img:UG+'UI_AnchorPreset.png',fit:1,up:1,src:1,w:.6},p:['Gli elementi della UI hanno un Transform speciale, il **RectTransform**. Gli **anchor** dicono a quale bordo dello schermo restano attaccati quando la finestra cambia forma.']},
+{k:'12d',t:'Button, *EventSystem*, Raycast',defs:[['EventSystem','Legge mouse, tastiera e gamepad per la UI'],['Graphic Raycaster','Sta sul Canvas: trova cosa c\'è sotto il mouse'],['Raycast Target','Sull\'immagine: se è spento, il clic la attraversa']],warn:'Un pannello trasparente sopra un pulsante con Raycast Target acceso blocca il clic.'},
+{k:'12e',t:'Il *Cursor*',table:{h:['Momento','Cursore'],r:[['In gioco','Bloccato al centro e nascosto: il mouse muove la camera'],['Pausa (Esc)','Libero e visibile: puoi cliccare'],['Vittoria o sconfitta','Libero e visibile']]},p:['Lo fa il GameManager da solo. Non serve toccare niente.']},
+{k:'12f',t:'La UI *del kit*',vis:{html:'<div class="kitui"><div class="col">'+cropFig('hud_01_partenza',[846,16,1264,144],'Objectives · cosa fare')+cropFig('hud_02_prompt_scheda',[440,572,840,644],'Prompt · premi E')+cropFig('hud_04_altare_senza_offerta',[330,494,950,568],'Messaggio · cosa manca')+cropFig('hud_06_inventario',[8,628,312,712],'Inventory · cosa hai raccolto')+'</div><div class="col">'+cropFig('hud_03_scheda',[266,126,1014,590],'HistoricalCard · testo, immagine, fonte')+'</div><div class="col">'+cropFig('hud_07_pausa',[470,150,810,546],'Pause · tasto Esc')+'</div></div>'},wide:1,n:'Fai vedere un elemento alla volta, nel gioco: obiettivi in alto a destra, il prompt E quando sei vicino, il messaggio quando manca qualcosa, l\'inventario in basso a sinistra, la scheda storica, la pausa con Esc.'},
+{k:'12g',alert:1,t:'Cosa *cambiare*',table:{h:['Vuoi cambiare','Dove'],r:[['Testi dei messaggi','GameManager, sezioni Vittoria e Messaggi'],['Nome del contatore','GameManager, Counter Label'],['Testo della scheda','Il componente della scheda storica'],['Nome e icona di un oggetto','Il file dell\'oggetto nel Project']]},warn:'I campi "già collegato nel prefab" non vanno toccati: sono i fili della UI.'},
+{k:'12h',t:'Se non funziona, *cosa controllare*',table:{h:['Cosa vedi','Cosa controllare','Perché'],r:[["Non riesco a cliccare", "C'è un EventSystem? Un pannello sopra?", "Senza EventSystem la UI non sente il mouse"], ["Il cursore non compare", "Premi Esc", "In gioco il cursore è nascosto apposta"], ["La UI è fuori posto su un altro schermo", "Le ancore", "L'elemento è attaccato al bordo sbagliato"], ["Il testo è tagliato", "La grandezza del riquadro", "Il testo è più lungo dello spazio"], ["La UI del kit non c'è", "Il GameManager è nella scena?", "La UI vive dentro il suo prefab"]]}},
+
+{ch:'13',t:'L\'*audio*',min:3,lead:'Metà del feedback è suono.'},
+{k:'13a',t:'Audio Source e *Audio Listener*',defs:[['Audio Source','Chi suona: un componente su un oggetto'],['Audio Listener','Chi ascolta: le orecchie, sulla camera']]},
+{k:'13b',t:'*Spatial Blend*',defs:[['2D','Uguale ovunque: musica, interfaccia'],['3D','Più forte vicino, da destra o da sinistra: braciere, passi']],p:['Si regola con **Spatial Blend** nell\'Audio Source.']},
+{k:'13c',say:'Ogni pezzo del kit ha un campo per il suo suono.',t:'L\'audio *del kit*',p:['Nel GameManager c\'è l\'**AudioManager**: musica, ambiente e volume degli effetti.','Quasi ogni pezzo del kit ha un campo per il suo suono: la porta, l\'altare, la piastra. Basta trascinarci un file audio.']},
+{k:'13d',t:'Se non funziona, *cosa controllare*',table:{h:['Cosa vedi','Cosa controllare','Perché'],r:[["Non si sente niente", "Clip assegnata, volume, Audio Listener sulla camera", "Serve qualcuno che suona e qualcuno che ascolta"], ["Si sente uguale ovunque", "Spatial Blend", "Il suono è 2D"], ["Avviso \"2 audio listeners\"", "Quante camere hanno l'Audio Listener", "Le orecchie devono essere una sola"], ["Il suono 3D sparisce subito", "Max Distance", "Si sente solo da troppo vicino"]]}},
+
+{pause:1},
+
+{ch:'14',t:'*Animation*',min:36,lead:'Dal personaggio fermo al Legionario che cammina, un passo alla volta.'},
+{k:'14a',t:'Animation e *keyframe*',vis:{g:'keys'},p:['Un\'animation è una serie di **pose nel tempo**. Si fissano alcune pose chiave (keyframe) e Unity calcola quelle in mezzo.']},
+{k:'14b',t:'Skeleton e *bones*',vis:{g:'bones'},p:['Dentro il modello c\'è uno **skeleton** invisibile. Ogni **bone** muove la parte di pelle vicina.','L\'animazione non muove il modello: muove le **bones**.']},
+{k:'14c',t:'Il rig: *Generic* o *Humanoid*',vis:{img:UM+'AvatarIntro.jpg',fit:1,src:1,w:.5},table:{h:['Rig','Cosa sa Unity','Quando'],r:[['Generic','Che ci sono delle ossa, e basta','Animali, porte, macchine'],['Humanoid','Dove sono testa, braccia, gambe','Ogni personaggio a forma umana']]},n:'Il rig è il modo in cui Unity legge lo scheletro.'},
+{k:'14d',t:'Avatar e *retargeting*',vis:{img:UM+'MecanimRetargetArcherT.png',fit:1,src:1},p:['Con Humanoid, Unity crea un **Avatar**: una mappa che dice "questa è la testa, questo il braccio".','Due personaggi diversi con l\'Avatar parlano la stessa lingua: è il **retargeting**.']},
+{k:'14e',t:'Mixamo: *scegliere l\'animazione*',vis:{img:'slide-img/mixamo-animazione.webp',fit:1,cap:'mixamo.com',w:1.5},steps:[['Cerca l\'animazione','Idle, Walking, Running'],['In Place','Per camminare e correre: resta sul posto'],['Download','Si apre Download Settings']],n:'Account Adobe gratuito.'},
+{k:'14e2',t:'Mixamo: *Download Settings*',vis:{img:'slide-img/mixamo-download-settings.png',fit:1,cap:'mixamo.com'},wide:1,cols:1,steps:[['Format','FBX for Unity (.fbx)'],['Skin','Without Skin'],['Frames per Second','30']],warn:'Rinomina il file: Anim_Walk.fbx, in una cartella Animation.',n:'Without Skin: solo il movimento, non il pupazzo di Mixamo.'},
+{k:'14f',t:'Il personaggio *diventa Humanoid*',vis:{img:UM+'Rig-2.png',fit:1,src:1},steps:[['Scheda Rig','Animation Type: Humanoid'],['Avatar Definition','Create From This Model, poi Apply'],['Configure','Ossa tutte verdi; un osso rosso si assegna a mano'],['Pose','Enforce T-Pose, poi Done']]},
+{k:'14g',t:'Anche le animazioni *Humanoid*',vis:{img:UM+'MecanimAvatarCreated.png',fit:1,up:1,src:1},steps:[['Seleziona tutti gli FBX','Insieme, con Shift'],['Scheda Rig','Humanoid, Create From This Model, Apply'],['Guarda la Console','Nessun avviso sull\'Avatar']],warn:'Personaggio e animazioni devono essere entrambi Humanoid. Se uno è Generic, resta in T-pose.'},
+{k:'14h',t:'Loop e *root motion*',vis:{img:UM+'classAnimationClip-Inspector.png',fit:1,src:1,w:.45},table:{h:['Impostazione','Valore','Perché'],r:[['Loop Time','acceso','Si ripete'],['Loop Pose','acceso','Nessuno scatto a fine ciclo'],['Root Rotation','Bake Into Pose','Non gira da solo'],['Root Position Y','Bake Into Pose','Non sprofonda']]},n:'Root motion: l\'animazione che sposta tutto il personaggio. Qui lo sposta il controller del giocatore.'},
+{k:'14i',t:'*Inverse Kinematics*',vis:{g:'ik'},p:['Normalmente l\'animazione muove anca, ginocchio e piede, in quest\'ordine. Con l\'**IK** (inverse kinematics) si parte dal piede: "deve stare qui", e Unity piega il resto.','Serve per appoggiare i piedi sui gradini. Con le animazioni di Mixamo fa solo danni.'],warn:'Foot IK spento sullo stato, nell\'Animator. IK Pass spento nel layer.'},
+{k:'14j',t:'Animator *Controller*',vis:{img:UM+'MecanimAnimatorControllerWindow.png',fit:1,src:1,w:1.2},p:['Un **Animator Controller** è una mappa di stati: in ogni stato suona un\'animazione, le frecce dicono quando passare all\'altro.','Si crea dal Project: **Create > Animator Controller**.']},
+{k:'14k',t:'Parameters e *transitions*',vis:{img:UM+'AnimationEditorParametersSection.png',fit:1,up:1,src:1,w:.6},defs:[['Float','Un numero: Speed, la velocità'],['Trigger','Un colpo singolo: Interact, PickUp'],['Condition','Sulla freccia: "passa se Speed > 0.1"'],['Has Exit Time','Spento, se deve reagire subito']],n:'Il controller del giocatore del kit scrive Speed da solo mentre cammini.'},
+{k:'14l',t:'Il *Blend Tree*',vis:{g:'blend'},steps:[['Nuovo stato','Tasto destro: Create State > From New Blend Tree'],['Dentro','Blend Type 1D, parametro Speed'],['Tre motion','Idle a 0, Walk a 1.6, Run a 4.5']],p:['Invece di saltare da camminata a corsa, le mescola in base alla velocità.'],n:'Speed è in metri al secondo: nel PlayerController walkSpeed vale 1.6 e runSpeed 4.5, per questo le soglie sono quelle. Il kit ha già AC_Legionario con questo schema: aprilo e confronta.'},
+{k:'14m',t:'Il componente *Animator*',vis:{img:UM+'MecanimAnimatorComponent.png',fit:1,up:1,src:1},defs:[['Controller','Il tuo Animator Controller'],['Avatar','Quello del Legionario'],['Apply Root Motion','Spento: muove il controller del giocatore']],p:['Poi Play, con la finestra Animator aperta accanto: guarda Speed cambiare mentre cammini.']},
+{k:'14n',t:'Se non funziona, *cosa controllare*',table:{h:['Cosa vedi','Controlla','Perché'],r:[['Resta in T-pose','Rig Humanoid su tutti e due','Se uno è Generic non trova lo scheletro'],['Braccia storte','Configure: ossa verdi','Un osso sbagliato piega la parte sbagliata'],['Un passo e si ferma','Loop Time','La clip finisce e non riparte'],['Gira o sprofonda','Bake Into Pose','La radice muove l\'oggetto'],['Piedi tirati','Foot IK e IK Pass spenti','L\'IK sposta i piedi dove calcola lui'],['Va fuori strada','In Place, Root Motion spento','Due sistemi muovono il personaggio']]},n:'Questa tabella va anche nel PDF: parte da quello che vedono, non dalla teoria.'},
+
+{ch:'15',t:'La *camera*',min:4,lead:'Quello che vede il giocatore.'},
+{k:'15a',t:'*Third-person* camera',vis:{img:'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/750920/ss_794a3ecd4ae51313f8cfffbc6b3d8b91c665b12b.1920x1080.jpg',fit:1,cap:'Shadow of the Tomb Raider · Steam',w:1.3},p:['La camera del kit segue il giocatore da dietro. Nel PlayerController si regolano **distanza** e **altezza**.']},
+{k:'15b',say:'Un livello si prova in Play, con la camera del giocatore.',t:'Editor e *giocatore*',p:['Nella Scene guardate tutto dall\'alto e da lontano. Il giocatore vede da un metro e settanta, da dietro le spalle.'],warn:'Un livello va sempre provato in Play, con la camera del giocatore.'},
+{k:'15c',t:'Il cielo *dentro il tempio*',vis:{g:'sky'},p:['La camera del kit si avvicina quando incontra un collider, per non entrare nei muri. Dove manca un soffitto, non trova niente e mostra il cielo.'],steps:[['Chiudi le stanze','Un soffitto, anche semplice'],['Un collider sopra','Se non vuoi il soffitto visibile, almeno un collider']]},
+{k:'15d',t:'Se non funziona, *cosa controllare*',table:{h:['Cosa vedi','Cosa controllare','Perché'],r:[["Vedo il cielo dentro le stanze", "Soffitto o collider sopra", "La camera non trova niente che la fermi"], ["La camera entra nei muri", "Il muro ha un collider?", "La camera si ferma solo contro i collider"], ["\"No cameras rendering\"", "C'è una camera attiva nella scena?", "Il giocatore del kit porta la sua camera"], ["La visuale è scomoda", "PlayerController: distanza e altezza", "Si regola senza codice"]]}},
+
+{ch:'16',t:'*VFX*',min:7,lead:'Fuoco, fumo, scintille.'},
+{k:'16a',t:'Cos\'è un *Particle System*',vis:{img:UM+'ParticleSystems-HoloTable.png',src:1,w:1.2},p:['Un **Particle System** spara tante piccole immagini, le **particles**, che nascono, si muovono e spariscono. Insieme sembrano fuoco, fumo o polvere.']},
+{k:'16b',t:'Emitter, Shape, *particles*',defs:[['Emitter','Il punto da cui nascono'],['Shape','La forma da cui escono: cono, sfera, cerchio'],['Particle','Un\'immagine che vive pochi secondi']]},
+{k:'16c',say:'Ogni particle: due triangles girati verso la camera.',t:'Perché sono *leggere*',p:['Ogni particella è un\'immagine piatta, due triangoli, sempre girata verso la camera. Cento particelle costano meno di un solo modello dettagliato.']},
+{k:'16d',say:"Troppe trasparenze una sopra l'altra fanno crollare i frame.",t:'Quando *pesano*',p:['Le particelle sono trasparenti. Se tante si sovrappongono, la scheda video ridisegna lo stesso pixel molte volte. Vicino alla camera, è il modo più rapido per far scendere i fotogrammi.'],warn:'Poche particelle grandi sono meglio di tantissime piccole.'},
+{k:'16e',t:'Il fuoco *fuori posto*',vis:{img:'https://docs.unity3d.com/2022.3/Documentation/uploads/Main/ShapeModule.png',fit:1,cap:'Fonte: Unity Manual 2022.3',w:.8},steps:[['Trova l\'emitter','Figlio del braciere nella Hierarchy'],['Controlla il Transform','Posizione locale dentro la coppa; se esce di lato, la rotazione'],['Controlla la Shape','Posizione e raggio dentro la coppa'],['Applica al prefab','Overrides, Apply: vale per tutti']]},
+{k:'16f',say:'Gli effetti del kit si regolano, non si rifanno.',t:'Gli effetti *del kit*',p:['Bracieri, torce e luccichii degli oggetti nascosti sono già pronti nei prefab. Si regolano, non si rifanno.'],n:'Mostra il luccichio della lucerna: un effetto che serve al level design.'},
+{k:'16g',t:'Se non funziona, *cosa controllare*',table:{h:['Cosa vedi','Cosa controllare','Perché'],r:[["Il fuoco non si vede", "Play On Awake, e che non sia dentro la geometria", "Non parte, o è nascosto"], ["Quadrati rosa al posto del fuoco", "Il materiale nel Renderer del Particle System", "Manca il materiale o non è compatibile"], ["Il fuoco è fuori posto", "Transform e Shape dell'emitter", "Il figlio è spostato o ruotato"], ["Resta indietro quando muovo il braciere", "Simulation Space", "In World le particelle restano dove sono nate"], ["Il gioco rallenta vicino al fuoco", "Max Particles", "Troppe trasparenze una sopra l'altra"]]}},
+
+{ch:'17',t:'Il *game feel*',min:5,lead:'Perché un gioco è bello da toccare.'},
+{k:'17a',say:'Non si vede in uno screenshot. Si sente giocando.',t:'Cos\'è il *game feel*',p:['È la sensazione di quando premi un tasto e il gioco risponde. Non si vede in uno screenshot, si sente giocando.']},
+{k:'17b',say:'Se manca la risposta, il giocatore pensa di aver sbagliato.',t:'Ogni azione ha *una risposta*',p:['Premi E sull\'altare: suono, luce, messaggio, la porta che si apre. Se manca la risposta, il giocatore pensa di aver sbagliato.'],warn:'Una porta che si apre senza segnale è un difetto di design.'},
+{k:'17c',t:'Insieme è *più forte*',defs:[['Sound','Conferma subito'],['Light','Guida lo sguardo'],['Particles','Rendono l\'evento visibile da lontano'],['Animation','Mostra che qualcosa si muove']],p:['Un solo segnale si perde. Due o tre insieme si ricordano.']},
+{k:'17d',say:'Se tutto lampeggia, niente è importante.',t:'Il troppo *stroppia*',p:['Se tutto lampeggia e suona, niente è importante. Il feedback forte va alle cose importanti: l\'offerta posata, la porta che si apre, la vittoria.']},
+{k:'17e',t:'Se non funziona, *cosa controllare*',table:{h:['Cosa vedi','Cosa controllare','Perché'],r:[["Il giocatore non sa se ha fatto qualcosa", "C'è un suono, una luce, un messaggio?", "Senza risposta pensa di aver sbagliato"], ["Tutto lampeggia e confonde", "Quanti effetti per azioni piccole", "Se tutto è importante, niente lo è"], ["La risposta sembra lenta", "Ritardi su suono e animazione", "Il feedback deve arrivare subito"]]}},
+
+{pause:1},
+
+{ch:'18',t:'Il *level design*',min:21,lead:'Guidare il giocatore senza scritte.'},
+{k:'18a',t:'Prima *il blockout*',vis:{img:'https://1666186240-files.gitbook.io/~/files/v0/b/gitbook-legacy-files/o/assets%2F-LtVT8pJjInrrHVCovzy%2F-M-8CjOctRDm_ccN4vu9%2F-M-8Dt4KaPpenMXMsARp%2Fblocktober_CodMW2019_Docks_BrianBaker.jpg?alt=media&token=194299e3-8f7f-438b-8295-6b1a5a149975',fit:1,cap:'Call of Duty: Modern Warfare (2019), mappa Docks: sopra il blockout, sotto la versione finale · Brian Baker, via The Level Design Book',w:1.4},p:['Si costruisce prima con **forme grezze** e si gioca. Se lo spazio funziona da grigio, funzionerà anche con l\'arte.'],n:'Se no, si è perso poco tempo.'},
+{k:'18a2',t:'Dal blockout *alle mesh*',steps:[['Apri Livello_Tempio_Blockout','Stanze di cubi grigi, già giocabile: premi Play'],['Scegli una stanza','Il Sacello è la più piccola'],['Trascina i prefab','Da Prefabs/Modulari, Maggiori e Decorazioni'],['Spegni i cubi coperti','Spunta via, non cancellare'],['Play, e guarda cosa succede','Questo è il vero esercizio']],warn:'Una persona sola per volta tiene la scena.',n:'Prima di cambiare, ognuno scrive su un foglio cosa pensa che si romperà. Dopo, si confronta. Le soluzioni sono nell\'Esercizio_Blockout.pdf.'},
+{k:'18a3',t:'Cosa *si rompe*, e come si risolve',table:{h:['Cosa vedi','Perché','Come si risolve'],r:[['Troppo grande o troppo piccolo','1 unit = 1 metro','Scale, poi Scale Factor nell\'import'],['Ruota in un punto strano','Il pivot non è dove pensi','Dentro un GameObject vuoto, e sposti quello'],['Attraversi il muro','Manca il Collider','Box Collider, o il prefab che ce l\'ha già'],['Dall\'interno si vede il vuoto','Facce da un solo lato','Material: Render Face = Both'],['Entra luce dove non dovrebbe','Fessura tra due muri','Snapping sulla griglia di 4 m; sovrapponili un po\''],['Dentro la stanza si vede il cielo','Manca il soffitto','Un soffitto, o almeno un collider sopra'],['Le superfici tremolano','Due superfici nello stesso punto','Sposta uno dei due di qualche centimetro']]},n:'Sono gli stessi problemi dei capitoli su 3D models, Light leaking e Camera. Qui li incontrano sul serio.'},
+{k:'18b',say:'Tutto si misura sul giocatore: circa 1,8 metri.',t:'La scala *del giocatore*',p:['Porte, gradini e corridoi si misurano sul giocatore, alto circa 1,8 metri. Un corridoio largo come un\'autostrada sembra vuoto; uno troppo stretto fa sbattere la camera.'],warn:'Mettete il giocatore in scena prima di costruire.'},
+{k:'18c',t:'*Focal point*',vis:{img:'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/638230/ss_040366eaf8bdf1dfb5a16ba5e503742ce96f2f6d.1920x1080.jpg',fit:1,cap:'Journey · Steam',w:1.3},p:['La meta si vede **prima** di sapere come arrivarci.','Il giocatore ha subito una domanda: come ci arrivo?'],n:'Chiedi alla classe dove guardano per primo: la montagna. Journey la mette in vista dall\'inizio alla fine.'},
+{k:'18d',t:'Le luci *che guidano*',vis:{img:'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/638230/ss_ed77e7844e32c4cb181ce585fa1a368285c66ec5.1920x1080.jpg',fit:1,cap:'Journey · Steam',w:1.3},p:['L\'occhio va verso la luce. Una zona illuminata nel buio è un invito.','Contrasto: le cose importanti sono più chiare, o di un colore diverso.'],n:'Nel kit: le torce in fila verso il cancello.'},
+{k:'18e',t:'Cornici e *percorsi*',vis:{img:'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/638230/ss_678009919bc0a5876ec7f4e60e8ec3070c090b58.1920x1080.jpg',fit:1,cap:'Journey · Steam',w:1.3},p:['Colonne, archi e porte incorniciano la meta.','Una fila di colonne è una freccia senza scritte.']},
+{k:'18f',say:'Aperto, stretto, aperto.',t:'Il *ritmo*',p:['Aperto, stretto, aperto. Il cortile fa respirare, il cancello stringe, il santuario si apre e premia.'],warn:'Un passaggio stretto prima della meta la rende più grande quando arrivi.'},
+{k:'18g',t:'Nascondere *senza frustrare*',vis:{img:'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1888930/ss_f4829000d3677a9b5b2f234482a7deff12b31ac9.1920x1080.jpg',fit:1,cap:'The Last of Us Part I · Steam',w:1.3},p:['Un oggetto nascosto deve essere **trovabile**: in ombra, ma con una luce o un luccichio che lo indica.','E il gioco dice cosa manca: "Ti serve: Lucerna".']},
+{k:'18h',t:'*Landmark*',vis:{img:'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/220/ss_0e499071a60a20b24149ad65a8edb769250f2921.1920x1080.jpg',fit:1,cap:'Half-Life 2 · Steam',w:1.3},p:['Qualcosa che si vede da ovunque e dice: il centro è là.','Senza, il giocatore si perde.'],n:'La Citadel di Half-Life 2 si vede da quasi ogni punto della città.'},
+{k:'18i',say:'Ogni 20 minuti, Play.',t:'Provare *dalla camera del giocatore*',p:['Ogni 20 minuti, Play. Ogni tanto, fate giocare qualcuno che non ha costruito, senza aiutarlo, e guardate dove si blocca.'],n:'Video: GMTK, "How Level Design Can Tell a Story" e "Super Mario 3D World\'s 4 Step Level Design".'},
+{k:'18j',t:'Se non funziona, *cosa controllare*',table:{h:['Cosa vedi','Cosa controllare','Perché'],r:[["Il giocatore si perde", "Punti di riferimento e luci che guidano", "Non sa dov'è la meta"], ["Non trova l'oggetto nascosto", "C'è un indizio, un luccichio?", "Nascosto non vuol dire invisibile"], ["Va dove non dovrebbe", "Muri e collider sui bordi", "Lo spazio non lo ferma"], ["Si annoia", "Il ritmo: stanze tutte uguali?", "Serve alternare aperto e stretto"], ["Si incastra negli angoli", "Scala e collider rispetto al giocatore", "Passaggi troppo stretti per la capsula"]]}},
+
+{ch:'19',t:'*Narrative* e patrimonio',min:7,lead:'Il gioco racconta qualcosa di vero.'},
+{k:'19a',t:'*Environmental storytelling*',vis:{grid2:[['https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/501300/ss_b33a742463deb8564a382e1744febceaa91a5bab.1920x1080.jpg','What Remains of Edith Finch','Steam'],['https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/232430/ss_33ca03b69812cef8993eea5fac6f904618d5d30b.1920x1080.jpg','Gone Home','Steam']]},wide:1,p:['Lo spazio racconta prima di qualsiasi testo: una stanza piena di oggetti, un biglietto lasciato su un tavolo.']},
+{k:'19b',say:"Prima l'oggetto, poi la spiegazione.",t:'Prima *mostrare*, poi spiegare',p:['Il giocatore vede l\'oggetto, lo usa, si chiede cos\'è. **Poi** arriva la spiegazione, quando ha una domanda.']},
+{k:'19c',t:'La *scheda storica*',vis:{img:'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/775430/ss_d168ff963d1db57a1993f94954cc7ce43e5d92e6.1920x1080.jpg',fit:1,cap:'Discovery Tour by Assassin\'s Creed: Ancient Egypt · Steam',w:1.3},p:['Breve, con un\'immagine e una fonte. Compare quando il giocatore si avvicina o usa qualcosa, e si chiude subito.'],warn:'Se la scheda è lunga, non la legge nessuno.'},
+{k:'19d',say:"L'errore storico pesa più di un bug.",t:'Le *fonti*',p:['Ogni cosa che scrivete deve avere una provenienza: un libro, un museo, un sito istituzionale. La scheda del kit ha un campo apposta.','In un gioco sul patrimonio, l\'errore storico pesa più di un bug.']},
+{k:'19e',t:'Se non funziona, *cosa controllare*',table:{h:['Cosa vedi','Cosa controllare','Perché'],r:[["Nessuno legge la scheda", "Quanto è lunga", "Il giocatore vuole tornare a giocare"], ["La scheda arriva troppo presto", "L'ordine: prima l'oggetto, poi la scheda", "Senza una domanda la risposta non interessa"], ["Non sei sicuro di un fatto", "La fonte", "L'errore storico pesa più di un bug"]]}},
+
+{ch:'20',t:'La *build*',min:3,lead:'Dal progetto al gioco da dare agli altri.'},
+{k:'20a',say:'Il vostro gioco, impacchettato. Si apre senza Unity.',t:'Cos\'è *una build*',p:['La build è il vostro gioco impacchettato: un programma che si apre con un doppio clic, senza Unity.']},
+{k:'20b',t:'Fare *la build*',vis:{img:UM+'build-profiles-assets.png',fit:1,up:1,src:1},steps:[['File > Build Profiles','La finestra delle build'],['Scene List','Aggiungi le scene; la prima è quella che parte'],['Build','Scegli una cartella vuota e aspetta']]},
+{k:'20c',say:'Copiate tutta la cartella. Provatela su un altro computer.',t:'Provarla *altrove*',p:['Copiate **tutta la cartella** della build, non solo il file del programma. E provatela su un altro computer prima della consegna.']},
+{k:'20d',t:'Se non funziona, *cosa controllare*',table:{h:['Cosa vedi','Cosa controllare','Perché'],r:[["Sull'altro computer non parte", "Hai copiato tutta la cartella?", "Il programma ha bisogno della sua cartella dei dati"], ["Parte la scena sbagliata", "L'ordine nella Scene List", "Parte la prima della lista"], ["Manca la piattaforma", "Unity Hub > Installs > Add modules", "Per fare un gioco Windows da Mac serve il modulo Windows"], ["La build fallisce", "Console: il primo errore", "Di solito è un errore negli script"]]}},
+
+{ch:'21',t:'Il metodo per *le 24 ore*',min:10,lead:'A cosa pensare prima, a cosa dopo.'},
+{k:'21a',say:'Si riesce a fare in 24 ore?',t:'Validare *l\'idea*',p:['Si riesce a fare in 24 ore? Si racconta in una frase? C\'entra il patrimonio? Se la risposta è no, si cambia idea SUBITO, non il giorno seguente.']},
+{k:'21b',say:'Cosa vede il giocatore entrando?',t:'*Immaginare* come sarà',p:['Cosa vede il giocatore entrando? Dove deve arrivare? Cosa scopre lungo la strada?']},
+{k:'21c',say:'Dieci minuti di disegno salvano ore di Unity.',t:'*Disegnarlo* a mano',p:['Una pianta su carta: stanze, percorso, punto focale, dove stanno gli oggetti. Dieci minuti di disegno salvano ore di Unity.']},
+{k:'21d',t:'Il disegno *sotto i piedi*',vis:{img:'https://opengameart.org/sites/default/files/level.jpg',fit:1,cap:'OpenGameArt · CC0',w:1.1},steps:[['Fotografa il disegno','Anche con il telefono'],['Mettilo su un Plane','Trascina la foto sul Plane: diventa la sua texture'],['Costruisci sopra','I muri seguono le linee del disegno']]},
+{k:'21e',say:'Cubi grigi, il giocatore, e si gioca subito.',t:'Prima *il gameplay* grezzo',p:['Cubi grigi, il giocatore, le interazioni base. Si gioca subito per capire se gli spazi funzionano.']},
+{k:'21f',say:'Solo quando lo spazio funziona.',t:'Poi *tutto il resto*',p:['Solo quando lo spazio funziona: modelli veri, interazioni complete, animazioni, luci, effetti, suoni, schede storiche.']},
+{k:'21g',say:'La prima build trova sempre problemi.',t:'Una build *a metà*',p:['A metà maratona fate una build e provatela. La prima build trova sempre problemi: meglio scoprirli subito che all\'ultimo minuto.']},
+{k:'21h',say:'Un gioco piccolo e finito batte un gioco grande a metà.',t:'Provare e *tagliare*',p:['Fate giocare chi non ha costruito. Quello che non funziona entro una certa ora, si taglia. Un gioco piccolo e finito batte un gioco grande a metà.']},
+{k:'21i',say:'Una persona tiene la scena.',t:'Chi tocca *la scena*',p:['Se due persone modificano la stessa scena, una cancella il lavoro dell\'altra. **Una persona** tiene la scena, gli altri preparano prefab, schede e suoni.']},
+{k:'21j',t:'Se non funziona, *cosa controllare*',table:{h:['Cosa vedi','Cosa controllare','Perché'],r:[["Mancano poche ore ed è a metà", "Qual è il giro minimo che funziona?", "Si taglia tutto il resto"], ["Il lavoro di uno ha cancellato quello di un altro", "Chi ha toccato la scena", "Una sola persona la modifica"], ["Nessuno capisce il gioco", "L'ultimo playtest", "Bisogna farlo giocare prima, non dopo"], ["La build non parte all'ultimo", "La build di metà maratona", "I problemi vanno trovati presto"]]}},
+{k:'21k',big:1,t:'Un passo *alla volta*.',p:['Provate a casa, una cosa per volta. Se vi bloccate, chiedete: domani siamo qui per questo.'],n:'Chiudi con i link ai video (lezione-unity-heritage.html, capitolo 07) e apri le domande.'},
+];
+
+/* ---------- motore ---------- */
+const md=s=>String(s).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/\*(.+?)\*/g,'<em>$1</em>').replace(/`(.+?)`/g,'<code>$1</code>');
+const st=document.getElementById('stage');let chap=null;
+function vis(v){if(!v)return'';if(v.shot)return`<div class="shot"><div><b>SCREENSHOT DA FARE</b>${v.shot}</div></div>`;
+ const fig=(src,fit,cap,w,up)=>`<div class="fig" style="flex:${w||1}"><div class="img${fit?' fit':''}${up?' up':''}"><img src="${src}" alt=""></div>${cap?`<div class="cap">${cap}</div>`:''}</div>`;
+ if(v.img)return fig(v.img,v.fit,v.cap||(v.src?FONTE:''),v.w,v.up);
+ if(v.crop){const[x0,y0,x1,y1]=v.box,[W,H]=v.size,cw=(x1-x0)/W,ch=(y1-y0)/H;return`<div class="fig" style="flex:${v.w||1}"><div class="crop" style="aspect-ratio:${x1-x0}/${y1-y0};background-image:url('${v.crop}');background-size:${100/cw}% auto;background-position:${cw<1?x0/W/(1-cw)*100:0}% ${ch<1?y0/H/(1-ch)*100:0}%"></div></div>`}
+ if(v.grid2)return`<div class="gridn" style="grid-template-columns:1fr 1fr">${v.grid2.map(([u,c,src])=>`<div class="fig"><div class="img" style="aspect-ratio:16/9;flex:0 0 auto"><img src="${u}" alt=""></div><div class="cap"><b style="color:var(--ink)">${c}</b>${src?' · '+src:''}</div></div>`).join('')}</div>`;
+ if(v.games)return`<div class="games">${v.games.map(([n,id])=>`<div class="fig"><div class="img" style="aspect-ratio:460/215;flex:0 0 auto"><img src="https://cdn.cloudflare.steamstatic.com/steam/apps/${id}/header.jpg" alt="${n}"></div><div class="cap"><b style="color:var(--ink)">${n}</b></div></div>`).join('')}</div><div class="cap" style="margin-top:8px">Immagini: Steam</div>`;
+ if(v.grid)return`<div class="gridn" style="grid-template-columns:repeat(${v.grid.length},1fr)">${v.grid.map(([u,c])=>fig(u,1,`<b style="color:var(--ink)">${c}</b> · ${FONTE}`)).join('')}</div>`;if(v.g)return`<div class="vis">${G[v.g]}</div>`;return`<div class="vis">${v.html}</div>`}
+function body(o){let h='';(o.p||[]).forEach(x=>h+=`<p>${md(x)}</p>`);
+ if(o.defs)h+='<dl class="defs">'+o.defs.map(([a,b])=>`<dt>${md(a)}</dt><dd>${md(b)}</dd>`).join('')+'</dl>';
+ if(o.steps)h+='<div class="steps'+(o.cols?' cols':'')+'">'+o.steps.map(([a,b])=>`<div class="step"><h3>${md(a)}</h3><p>${md(b)}</p></div>`).join('')+'</div>';
+ if(o.table)h+='<table><tr>'+o.table.h.map(x=>`<th>${x}</th>`).join('')+'</tr>'+o.table.r.map(r=>'<tr>'+r.map(c=>`<td>${md(c)}</td>`).join('')+'</tr>').join('')+'</table>';
+ if(o.warn)h+=o.alert?`<div class="warn">${md(o.warn)}</div>`:`<p class="aside">${md(o.warn)}</p>`;return h}
+/* ---------- slide a passi: frecce e clic portano allo stesso stato ---------- */
+const inGrid=()=>document.body.classList.contains('grid');
+const H2=o=>`<h2>${md(o.t.replace(/\*/g,''))}</h2>`;
+function stepper(s,n,paint){s._steps=n;s._step=0;s._setStep=k=>{s._step=Math.max(0,Math.min(n,k));paint(s._step)};paint(0)}
+const pnl=(h,on)=>`<div class="pn${on?' on':''}">${h}</div>`;
+function areasHtml(a){const[W,H]=a.size;
+ const bx=a.items.map(it=>{const[x0,y0,x1,y1]=it.box;return`<button type="button" class="ab" aria-label="${it.name}" style="left:${x0/W*100}%;top:${y0/H*100}%;width:${(x1-x0)/W*100}%;height:${(y1-y0)/H*100}%"></button>`}).join('');
+ const ps=pnl(`<p class="p0">${md(a.intro)}</p>`,1)+a.items.map(it=>pnl(`<h3>${md(it.name)}</h3><p>${md(it.p)}</p>${it.aside?`<p class="aside">${md(it.aside)}</p>`:''}`)).join('');
+ return`<div class="row"><div class="arimg"><div class="arz"><img src="${a.img}" alt="">${bx}</div></div><div class="pns">${ps}</div></div>`}
+function mkAreas(s,a){const bs=[...s.querySelectorAll('.ab')],ps=[...s.querySelectorAll('.pn')],arz=s.querySelector('.arz'),[W,H]=a.size;
+ /* Zoom: la finestra scelta riempie il riquadro (contain), centrata e senza uscire dall'immagine. */
+ const zoom=n=>{if(!n){arz.style.transform='none';return}
+  const[x0,y0,x1,y1]=a.items[n-1].box,k=Math.min(W/(x1-x0),H/(y1-y0)),cl=(t,k)=>Math.max(1-k,Math.min(0,t));
+  const tx=cl(.5-k*(x0+x1)/2/W,k),ty=cl(.5-k*(y0+y1)/2/H,k);
+  arz.style.transform=`translate(${tx*100}%,${ty*100}%) scale(${k})`};
+ stepper(s,bs.length,n=>{bs.forEach((b,j)=>b.classList.toggle('sel',j===n-1));ps.forEach((p,j)=>p.classList.toggle('on',j===n));zoom(n)});
+ bs.forEach((b,j)=>b.addEventListener('click',()=>{if(inGrid())return;s._setStep(j+1);b.blur()}))}
+const PV=`<svg viewBox="0 0 280 270"><g class="flame" transform="translate(10.3 -11.3) scale(.2035)"><path fill="#1b1b1b" d="M437 311C475 338 520 372 546 432C556 420 558 405 551 391C590 415 614 470 614 535C614 595 578 635 531 650L455 655C395 630 366 585 366 525C366 470 425 430 443 372C449 352 446 330 437 311Z"/><path fill="#f4f4f1" d="M454 655C428 630 428 585 461 548C463 556 458 562 461 570C470 545 495 532 512 515C503 538 512 556 528 570C548 592 545 630 531 650Z"/></g><g class="mesh" fill="#e9e9e5" stroke="#1b1b1b" stroke-width="2"><path d="M60 120H160Q160 172 110 172Q60 172 60 120Z"/><rect x="97" y="172" width="26" height="55"/><rect x="78" y="227" width="64" height="12"/></g><rect class="col" x="50" y="48" width="120" height="196" fill="none" stroke="#1b1b1b" stroke-width="2" stroke-dasharray="7 5"/><text class="col" x="50" y="38">collider</text><g class="pl"><circle cx="228" cy="213" r="16" fill="#e9e9e5" stroke="#1b1b1b" stroke-width="2"/><text x="228" y="259" text-anchor="middle">player</text></g></svg>`;
+function partsHtml(p,warn){const rows=p.items.map(it=>`<div class="r"><span class="cb ${it.cb?'x t':'sp'}"></span><span>${it.name}</span></div>`).join('');
+ const ps=pnl(`<p>${md(p.intro)}</p>`,1)+p.items.map(it=>pnl(`<p>${md(it.p)}</p>`)).join('');
+ return`<div class="pt"><div class="comp"><span class="cap" style="font-weight:700;color:#1b1b1b">${p.head}</span>${rows}</div><div class="pv">${PV}</div><div class="pcol"><div class="pns">${ps}</div>${warn?body({warn}):''}</div></div>`}
+function mkParts(s){const rows=[...s.querySelectorAll('.comp .r')],cbs=[...s.querySelectorAll('.cb.x')],pv=s.querySelector('.pv svg'),ps=[...s.querySelectorAll('.pn')];let en=[1,1,1];
+ const paint=n=>{rows.forEach((r,j)=>r.classList.toggle('on',j===n-1));cbs.forEach((c,j)=>c.classList.toggle('t',!!en[j]));['nomesh','nocol','nosw'].forEach((c,j)=>pv.classList.toggle(c,!en[j]));ps.forEach((p,j)=>p.classList.toggle('on',j===n))};
+ stepper(s,rows.length,n=>{en=[1,1,1];if(n>=2)en[n-2]=0;paint(n)});
+ rows.forEach((r,j)=>r.addEventListener('click',()=>{if(!inGrid())s._setStep(j+1)}));
+ cbs.forEach((c,j)=>c.addEventListener('click',e=>{if(inGrid())return;e.stopPropagation();en[j]=en[j]?0:1;paint(s._step)}))}
+/* Moduli SIM esterni: SIM[name]={steps,html,set(root,step),enter?(root),leave?(root)}. Ogni chiamata è protetta da try/catch. */
+function simHtml(o){const m=(window.SIM||{})[o.sim];
+ if(!m)return`<div class="solo">${body({p:o.p,warn:o.warn,alert:o.alert})}</div>`;
+ let t=(o.p||[]).map(x=>`<p>${md(x)}</p>`).join('');
+ if(o.caps)t+=`<p class="cap-step">${md(o.caps[0]||'')}</p>`;
+ if(o.warn)t+=o.alert?`<div class="warn">${md(o.warn)}</div>`:`<p class="aside">${md(o.warn)}</p>`;
+ const v=`<div class="vis sim" data-sim="${o.sim}"${o.simw&&!o.wide?` style="flex:${o.simw}"`:''}>${m.html}</div>`;
+ return o.wide?`<div class="wide">${v}<div>${t}</div></div>`:`<div class="row">${v}<div class="txt">${t}</div></div>`}
+function mkSim(s,o){const m=(window.SIM||{})[o.sim];if(!m)return;
+ const root=s.querySelector('.sim'),cap=s.querySelector('.cap-step'),n=m.steps|0;
+ const call=(f,...a)=>{try{if(typeof m[f]==='function')m[f](root,...a)}catch(e){console.error('SIM '+o.sim+'.'+f,e)}};
+ const rng=root.querySelector('input.rng');if(rng){rng.min=0;rng.max=n;rng.step=1;rng.value=0}
+ s._simEnter=()=>call('enter');s._simLeave=()=>call('leave');
+ stepper(s,n,k=>{root.querySelectorAll('[data-s]').forEach(e=>e.classList.toggle('on',+e.dataset.s===k));
+  if(rng)rng.value=k;
+  if(cap&&o.caps){cap.innerHTML=md(o.caps[k]||'');if(cap.textContent.trim().split(/\s+/).length>=5)glueTail(cap,2)}
+  call('set',k)});
+ root.addEventListener('click',e=>{const t=e.target.closest('[data-s]');if(t&&root.contains(t)&&!inGrid()){s._setStep(+t.dataset.s);t.blur()}});
+ if(rng){rng.addEventListener('input',()=>{if(!inGrid())s._setStep(+rng.value)});rng.addEventListener('change',()=>rng.blur())}}
+/* Sfera UV: proiezione ortogonale con inclinazione, back faces scartate, grigio piatto da un termine di Lambert. */
+const SEG=[4,6,8,12,16,24,32,48];
+function sphereSvg(seg){const rings=seg/2,T=Math.PI/9,Y=.5,cT=Math.cos(T),sT=Math.sin(T),cY=Math.cos(Y),sY=Math.sin(Y),R=170;
+ const rot=(x,y,z)=>{const a=x*cY+z*sY,c=-x*sY+z*cY;return[a,y*cT-c*sT,y*sT+c*cT]};
+ const V=[];for(let r=0;r<=rings;r++){const th=Math.PI*r/rings,row=[];for(let k=0;k<seg;k++){const ph=2*Math.PI*k/seg;row.push(rot(Math.sin(th)*Math.cos(ph),Math.cos(th),Math.sin(th)*Math.sin(ph)))}V.push(row)}
+ const Ln=Math.hypot(-.45,.65,.62),L=[-.45/Ln,.65/Ln,.62/Ln],out=[];
+ const tri=(a,b,c)=>{const u=[b[0]-a[0],b[1]-a[1],b[2]-a[2]],v=[c[0]-a[0],c[1]-a[1],c[2]-a[2]];let n=[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]];
+  if(n[0]*(a[0]+b[0]+c[0])+n[1]*(a[1]+b[1]+c[1])+n[2]*(a[2]+b[2]+c[2])<0)n=n.map(x=>-x);
+  if(n[2]<=1e-9)return;const l=Math.hypot(...n),t=Math.max(0,(n[0]*L[0]+n[1]*L[1]+n[2]*L[2])/l);
+  const f=(lo,hi)=>Math.round(lo+(hi-lo)*t),pt=q=>(200+R*q[0]).toFixed(1)+','+(200-R*q[1]).toFixed(1);
+  out.push(`<polygon points="${pt(a)} ${pt(b)} ${pt(c)}" fill="rgb(${f(58,244)},${f(58,244)},${f(58,241)})"/>`)};
+ for(let r=0;r<rings;r++)for(let k=0;k<seg;k++){const k1=(k+1)%seg,a=V[r][k],b=V[r][k1],c=V[r+1][k1],d=V[r+1][k];
+  if(r===0)tri(a,c,d);else if(r===rings-1)tri(a,b,d);else{tri(a,b,c);tri(a,c,d)}}
+ return`<svg viewBox="0 0 400 400"><g stroke="#1b1b1b" stroke-width="1" stroke-linejoin="round">${out.join('')}</g></svg>`}
+const polyHtml=()=>`<div class="poly"><div class="sph"></div><input type="range" min="0" max="${SEG.length-1}" step="1" value="0" aria-label="Detail level"><div class="cnt"></div></div>`;
+function mkPoly(s){const sph=s.querySelector('.sph'),inp=s.querySelector('.poly input'),cnt=s.querySelector('.cnt');
+ stepper(s,SEG.length-1,n=>{const g=SEG[n];sph.innerHTML=sphereSvg(g);inp.value=n;cnt.textContent='Triangles: '+2*g*(g/2-1)});
+ inp.addEventListener('input',()=>{if(!inGrid())s._setStep(+inp.value)});inp.addEventListener('change',()=>inp.blur())}
+/* Override: window.OVR[k]===null toglie la slide k, altrimenti la sostituisce. Prima di calcolare subs. */
+for(const k in (window.OVR||{})){const v=window.OVR[k],ix=D.findIndex(o=>o.k===k);if(ix<0)continue;if(v===null)D.splice(ix,1);else D[ix]=v}
+const subs={};let cur;D.forEach(o=>{if(o.ch)cur=o.ch;else if(o.k&&cur)(subs[cur]=subs[cur]||[]).push(o)});
+D.forEach(o=>{const s=document.createElement('section');s.className='s';let h='';
+ if(o.cover){s.classList.add('part');h=`<div class="k"><span>Digital Heritage · Pantheon</span><span>12 novembre 2026</span></div><h1>Un gioco<br>sul <em>patrimonio</em><br>in Unity</h1><p class="lead" style="margin-top:28px">Dalla demo «Offerta al Tempio» al vostro livello per l'hackathon.</p>`}
+ else if(o.pause){s.classList.add('part','dark');h=`<div class="k"><span>Digital Heritage · Pantheon</span><span></span></div><h1>Pausa</h1>`}
+ else if(o.ch){chap=o;s.classList.add('part','dark');h=`<div class="k"><span>Capitolo ${o.ch}</span><span></span></div><h1>${md(o.t)}</h1>`}
+ else{if(o.dark)s.classList.add('dark');if(o.big)s.classList.add('big');
+  h=`<div class="k"><span>${chap?chap.ch+' · '+chap.t.replace(/\*/g,''):o.t}</span><span></span></div>`;s.dataset.k=o.k;
+  if(o.hero){s.classList.add('hero');h+=`<img class="me" src="${o.hero}" alt=""><div class="who"><h1>${o.name[0]}<br><em>${o.name[1]}</em></h1><p class="say">${md(o.say)}</p></div>`}
+  else if(o.huge)h+=`<h1 class="huge">${md(o.t)}</h1>`;else if(o.big)h+=`<h1>${md(o.t)}</h1><p class="lead" style="margin-top:26px;max-width:44ch">${md((o.p||[''])[0])}</p>`;
+  else if(o.say){h+=`<h2>${md(o.t.replace(/\*/g,''))}</h2><div class="solo"><p class="say">${md(o.say)}</p></div>`;o.n=[...(o.p||[]),o.warn||'',o.n||''].filter(Boolean).join(' ')}
+  else if(o.areas)h+=H2(o)+areasHtml(o.areas);
+  else if(o.sim)h+=H2(o)+simHtml(o);
+  else if(o.parts)h+=H2(o)+`<div class="wide">${partsHtml(o.parts,o.warn)}</div>`;
+  else if(o.poly)h+=H2(o)+`<div class="row">${polyHtml()}<div class="txt">${body(o)}</div></div>`;
+  else{h+=H2(o);const v=vis(o.vis),b=body(o);
+   if(!v)h+=`<div class="solo">${b}</div>`;
+   else if(o.wide)h+=`<div class="wide">${v}<div>${b}</div></div>`;
+   else h+=`<div class="row">${v}<div class="txt">${b}</div></div>`}}
+ if(o.ch&&o.min)o.n=`Tempo previsto: ${o.min} minuti.`+(o.n?' '+o.n:'');
+ if(o.pause)o.n='Pausa di 10 minuti.';
+ if(o.n)h+=`<div class="notes">${o.n}</div>`;s.innerHTML=h;st.appendChild(s);
+ if(o.areas)mkAreas(s,o.areas);if(o.parts)mkParts(s);if(o.poly)mkPoly(s);if(o.sim)mkSim(s,o)});
+
+const S=[...document.querySelectorAll('.s')],nb=document.getElementById('notes'),bar=document.getElementById('bar');
+let i=0;try{i=Math.min(S.length-1,+(location.hash.slice(1)||1)-1)||0}catch(e){}
+S.forEach((s,k)=>s.dataset.n=(k+1)+' / '+S.length);
+function fit(){const r=Math.min(innerWidth/1280,innerHeight/720);st.style.transform=`translate(-50%,-50%) scale(${r})`}
+function show(n,back){const o=i;i=Math.max(0,Math.min(S.length-1,n));
+ if(o!==i&&S[o]._simOn){S[o]._simOn=0;S[o]._simLeave()}
+ S.forEach((s,k)=>s.classList.toggle('on',k===i));
+ const c=S[i];if(c._simEnter&&!c._simOn){c._simOn=1;c._simEnter()}
+ if(i!==o&&c._setStep)c._setStep(back?c._steps:0);else if(c._simEnter)c._setStep(c._step);
+ const t=S[i].querySelector('.notes');nb.innerHTML='<b>NOTE DEL DOCENTE · '+(i+1)+'</b>'+(t?t.innerHTML:'—');
+ bar.style.width=((i+1)/S.length*100)+'%';try{history.replaceState(null,'','#'+(i+1))}catch(e){}}
+function next(){const s=S[i];if(s._steps&&s._step<s._steps)s._setStep(s._step+1);else show(i+1)}
+function prev(){const s=S[i];if(s._steps&&s._step>0)s._setStep(s._step-1);else show(i-1,1)}
+addEventListener('keydown',e=>{
+ if(e.target&&e.target.tagName==='INPUT')return;
+ if(['ArrowRight','PageDown',' '].includes(e.key)){e.preventDefault();next()}
+ else if(['ArrowLeft','PageUp'].includes(e.key))prev();
+ else if(e.key==='n'||e.key==='N')nb.classList.toggle('on');
+ else if(e.key==='g'||e.key==='G'){if(document.body.classList.toggle('grid'))S.forEach(s=>s._setStep&&s._setStep(0));fit()}
+ else if(e.key==='Home')show(0);else if(e.key==='End')show(S.length-1)});
+S.forEach((s,k)=>s.addEventListener('click',()=>{if(document.body.classList.contains('grid')){document.body.classList.remove('grid');show(k);fit()}}));
+/* Niente parole vedove: a capo dopo i ":" se la frase va su più righe, e le ultime parole restano unite. */
+const TXT='p, dd, .aside, .warn, .step p, td';
+function lines(el){const lh=parseFloat(getComputedStyle(el).lineHeight)||20;return Math.round(el.offsetHeight/lh)}
+function textNodes(el){const w=document.createTreeWalker(el,NodeFilter.SHOW_TEXT,{acceptNode:n=>n.parentElement.closest('code')?2:1});const a=[];while(w.nextNode())a.push(w.currentNode);return a}
+function colonBreak(el){if(lines(el)<2)return;for(const n of textNodes(el)){const k=n.data.indexOf(': ');if(k<0)continue;
+ const rest=el.textContent.slice(el.textContent.indexOf(n.data)+k+2).trim().split(/\s+/).length;if(rest<3)return;
+ const after=n.splitText(k+1);after.data=after.data.replace(/^\s+/,'');n.parentNode.insertBefore(document.createElement('br'),after);return}}
+function glueTail(el,count){const ns=textNodes(el).filter(n=>n.data.trim());let left=count;
+ for(let j=ns.length-1;j>=0&&left>0;j--){const d=ns[j].data.replace(/\s+$/,'');let out=d,idx=d.length;
+  while(left>0){const sp=out.lastIndexOf(' ',idx-1);if(sp<=0)break;out=out.slice(0,sp)+' '+out.slice(sp+1);idx=sp;left--}
+  ns[j].data=out+ns[j].data.slice(d.length);if(left>0&&j>0&&/\s$/.test(ns[j-1].data)){ns[j-1].data=ns[j-1].data.replace(/\s+$/,' ');left--}}}
+function fixText(s){s.querySelectorAll(TXT).forEach(el=>{if(el.closest('.notes')||el.closest('.sim'))return;
+ if(el.matches('p, dd, .aside, .warn')&&!el.classList.contains('say')&&!el.closest('.pn'))colonBreak(el);
+ if(el.textContent.trim().split(/\s+/).length>=5)glueTail(el,el.classList.contains('say')?1:2)})}
+addEventListener('resize',fit);fit();
+document.fonts.ready.then(()=>{S.forEach(s=>{const on=s.classList.contains('on');s.classList.add('on');fixText(s);if(!on)s.classList.remove('on')});show(i)});
+show(i);
+</script>
+</body>
+</html>
